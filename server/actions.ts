@@ -5,7 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { eq, and } from "drizzle-orm"
 import { z } from "zod"
-
+import { clerkClient } from "@clerk/nextjs/server";
 // I put these comments for study purposes lol
 // zod Schemas
 // z.object defines the expected shape of incoming form fields.
@@ -15,6 +15,12 @@ const createChoreSchema = z.object({
     // min(1): blocks empty titles after trimming.
     // max(120): keeps title length bounded.
     title: z.string().trim().min(1, "Title is required").max(120, "Title is too long"),
+    assigneeUserId: z.string().min(1, "Please select a member"),
+    deadline: z
+        .string()
+        .optional()
+        .transform((v) => (v && v.length > 0 ? new Date(v) : null))
+        .refine((d) => d === null || !Number.isNaN(d.getTime()), "Invalid deadline"),
 })
 
 const deleteChoreSchema = z.object({
@@ -56,13 +62,25 @@ export async function createChore(formData: FormData) {
     if (!orgId) throw new Error("You must be in an Apartment to add chores!");
     if (!userId) throw new Error("You must be signed in to perform this action");
 
-    const { title } = parseFormData(createChoreSchema, formData);
+    const { title, assigneeUserId, deadline } = parseFormData(createChoreSchema, formData);
 
+    const client = await clerkClient();
+    const membership = await client.organizations.getOrganizationMembershipList({
+        organizationId: orgId,
+        userId: [assigneeUserId],
+        limit: 1,
+    });
+
+    if (membership.data.length === 0) {
+        throw new Error("Selected member is not part of this apartment");
+    }
     await db.insert(chores).values({
         title,
         apartmentId: orgId,
-        userId: userId, 
-        deadline: new Date()
+        userId: assigneeUserId, 
+        createdByUserId: userId,
+        isCompleted: false,
+        deadline,
     })
 
     revalidatePath("/")
