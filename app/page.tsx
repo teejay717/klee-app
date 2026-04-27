@@ -14,7 +14,6 @@ export default async function Page() {
   const { userId, orgId } = await auth();
 
   const client = await clerkClient();
-  const user = userId ? await client.users.getUser(userId) : null;
 
   // fetch members
   const memberships = orgId ? await client.organizations.getOrganizationMembershipList({ 
@@ -46,7 +45,6 @@ export default async function Page() {
       
       {/* Simple Form to add a chore */}
       <AddChoreDialog members={members} />
-
       <ChoreList chores={apartmentChores} members={members} currentUserId={userId} />
     </main>
   );

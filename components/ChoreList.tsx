@@ -51,16 +51,16 @@ export default function ChoreList({ chores, members, currentUserId }: ChoreListP
                 const chipText = chore.userId === currentUserId ? "You" : assignee.split(' ')[0];
 
                 return (
-            <div key={chore.id} className={`p-3 border rounded-md flex items-center justify-between gap-3 my-2 ${chore.isCompleted ? "bg-slate-100" : ""}`}>
+            <div key={chore.id} className={`p-3 border rounded-md flex items-center justify-between gap-3 my-2 ${chore.isCompleted ? "bg-slate-100/80" : ""}`}>
             <div className="flex items-center gap-3 min-w-0">
                 <form action={setChoreCompleted}>
                 <input type="hidden" name="choreId" value={String(chore.id)} />
                 <input type="hidden" name="nextCompleted" value={String(!chore.isCompleted)} />
-                    <Checkbox type="submit" checked={chore.isCompleted}/>
+                    <Checkbox type="submit" className="hover:cursor-pointer" checked={chore.isCompleted}/>
                 </form>
 
                 <div className="min-w-0">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 ">
                         <p className={chore.isCompleted ? "truncate line-through text-muted-foreground" : "truncate"}>
                             {chore.title} 
                         </p>
@@ -85,7 +85,7 @@ export default function ChoreList({ chores, members, currentUserId }: ChoreListP
         })}
 
         {chores.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No chores yet!</p>
+        <p className="text-muted-foreground text-sm ">No chores yet!</p>
         ) : null}
     </div>
     );

@@ -66,7 +66,7 @@ return (
             <SelectContent>
                 {members.map((m) => (
                 <SelectItem key={m.userId} value={m.userId}>
-                    {m.label}
+                    {m.label.split(' ')[0]}
                 </SelectItem>
                 ))}
             </SelectContent>

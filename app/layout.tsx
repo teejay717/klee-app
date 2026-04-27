@@ -7,10 +7,14 @@ import {
   UserButton,
   OrganizationSwitcher,
 } from "@clerk/nextjs";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/AppSidebar";
 
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { currentUser } from "@clerk/nextjs/server";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -19,11 +23,27 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 });
 
-export default function RootLayout({
+type SidebarIdentity = {
+  name: string,
+  email: string
+} | null
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const user = await currentUser();
+
+  const sidebarIdentity: SidebarIdentity = user ? {
+    name: user.fullName ?? user.username ?? user.firstName ?? "User",
+    email:
+      user.primaryEmailAddress?.emailAddress ??
+      user.emailAddresses?.[0]?.emailAddress ??
+      "No Email",
+  } : null;
+
   return (
     <html
       lang="en"
@@ -32,25 +52,29 @@ export default function RootLayout({
     >
       <body>
         <ClerkProvider>
-          <ThemeProvider>
-            <header className="flex items-center justify-end gap-3 border-b p-4">
-              <Show when="signed-out">
-                <SignInButton />
-                <SignUpButton />
-              </Show>
-              <Show when="signed-in">
-                <OrganizationSwitcher 
-                    hidePersonal={true} // Hides personal account so they MUST pick an apartment
-                    afterCreateOrganizationUrl="/" 
-                    afterSelectOrganizationUrl="/"
-                  />
-                <UserButton />
-              </Show>
-            </header>
-            <Show when="signed-in">
-              {children}
-            </Show> 
-          </ThemeProvider>
+          <TooltipProvider>
+            <ThemeProvider>
+              <header className="flex items-center justify-end gap-3 border-b p-4">
+                <Show when="signed-out">
+                  <SignInButton />
+                  <SignUpButton />
+                </Show>
+                <Show when="signed-in">
+                  <SidebarProvider>
+                    <AppSidebar identity={sidebarIdentity}/>
+                      <SidebarInset>
+                        <header className="border-b p-2">
+                          <SidebarTrigger />
+                        </header>
+                        <div className="p-4">
+                          {children}
+                        </div>
+                    </SidebarInset>
+                  </SidebarProvider>
+                </Show>
+              </header>
+            </ThemeProvider>
+          </TooltipProvider>
         </ClerkProvider>
       </body>
     </html>
