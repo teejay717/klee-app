@@ -3,9 +3,10 @@ import { chores } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
-import { createChore } from "@/server/actions";
+import { createChore, deleteChore, setChoreCompleted } from "@/server/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Check } from "lucide-react";
 
 export default async function Page() {
   const { userId, orgId } = await auth();
@@ -31,11 +32,29 @@ export default async function Page() {
 
       {/* The List */}
       <div className="space-y-2">
+        
         {apartmentChores.map((chore: any) => (
           <div key={chore.id} className="p-3 border rounded-md flex justify-between">
+            <form action={setChoreCompleted}>
+              <input type="hidden" name="choreId" value={String(chore.id)} />
+              <input type="hidden" name="nextCompleted" value={String(!chore.isCompleted)} />
+              <Button
+                type="submit"
+                size="icon-sm"
+                variant={chore.isCompleted ? "default" : "outline"}
+                className={chore.isCompleted ? "bg-green-600 text-white hover:bg-green-700" : ""}
+                aria-label={chore.isCompleted ? "Mark incomplete" : "Mark complete"}
+                title={chore.isCompleted ? "Mark incomplete" : "Mark complete"}
+              >
+                <Check />
+              </Button>
+            </form>
             <span>{chore.title}</span>
-            <span>{username}</span>
-            {chore.isCompleted && <span className="text-green-500">✓</span>}
+            {/* <span>{username}</span> */}
+            <form action={deleteChore}>
+              <input type="hidden" name="choreId" value={chore.id} />
+              <Button type="submit" variant="destructive">Delete</Button>
+            </form>
           </div>
         ))}
         {apartmentChores.length === 0 && (

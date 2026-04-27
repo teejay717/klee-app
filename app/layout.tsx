@@ -47,7 +47,9 @@ export default function RootLayout({
                 <UserButton />
               </Show>
             </header>
-            {children}
+            <Show when="signed-in">
+              {children}
+            </Show> 
           </ThemeProvider>
         </ClerkProvider>
       </body>
