@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { createChore } from "@/server/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
     Dialog,
+    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
@@ -30,11 +31,26 @@ type MemberOption = {
 export default function AddChoreDialog({ members }: { members: MemberOption[] }) {
 const defaultMember = useMemo(() => members[0]?.userId ?? "", [members]);
 const [assigneeUserId, setAssigneeUserId] = useState(defaultMember);
+const [open, setOpen] = useState(false);
+const [submitError, setSubmitError] = useState<string | null>(null);
+const formRef = useRef<HTMLFormElement>(null);
+
+async function handleCreateChore(formData: FormData) {
+    setSubmitError(null);
+    try {
+        await createChore(formData);
+        formRef.current?.reset();
+        setAssigneeUserId(defaultMember);
+        setOpen(false);
+    } catch {
+        setSubmitError("Could not create chore. Please try again.");
+    }
+}
 
 return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger asChild>
-        <Button>Add chore</Button>
+        <Button size="lg" className="bg-blue-800 hover:bg-blue-600">+ Add chore</Button>
     </DialogTrigger>
 
     <DialogContent>
@@ -45,7 +61,7 @@ return (
         </DialogDescription>
         </DialogHeader>
 
-        <form action={createChore} className="space-y-4">
+        <form ref={formRef} action={handleCreateChore} className="space-y-4">
         <div className="space-y-2">
             <Label htmlFor="title">Task title</Label>
             <Input id="title" name="title" placeholder="Wash dishes" required />
@@ -74,11 +90,13 @@ return (
         </div>
 
         <DialogFooter>
-            <Button type="submit" disabled={!assigneeUserId}>
-            Add chore
-            </Button>
+                <Button type="submit" disabled={!assigneeUserId} className="bg-blue-800 hover:bg-blue-600" size="lg">
+                Add chore
+                </Button>
         </DialogFooter>
         </form>
+
+        {submitError ? <p className="text-sm text-red-500">{submitError}</p> : null}
     </DialogContent>
     </Dialog>
 );

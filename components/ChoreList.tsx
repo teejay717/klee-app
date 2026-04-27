@@ -3,6 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Check, Trash } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
 import { diff } from "node:util";
+import {
+    Card,
+    CardAction,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
+import AddChoreDialog from "./AddChoreDialog";
 
 type MemberOption = {
     userId: string,
@@ -45,7 +55,18 @@ export default function ChoreList({ chores, members, currentUserId }: ChoreListP
     const memberLabelById = new Map(members.map((m) => [m.userId, m.label]));
 
     return (
-        <div>
+        <Card>
+            <CardHeader className="flex items-center gap-3 text-center justify-between">
+                <div className="flex flex-col">
+                    <CardTitle className="text-2xl font-bold">Apartment Chores</CardTitle>
+                    <CardDescription>Tasks assigned across roommates</CardDescription>
+                </div>
+                <CardAction className="self-auto">
+                    <AddChoreDialog members={members}/>
+                </CardAction>
+            </CardHeader>
+            <CardContent>
+                <div>
             {chores.map((chore) => {
                 const assignee = memberLabelById.get(chore.userId) ?? "Unknown Member";
                 const chipText = chore.userId === currentUserId ? "You" : assignee.split(' ')[0];
@@ -60,11 +81,11 @@ export default function ChoreList({ chores, members, currentUserId }: ChoreListP
                 </form>
 
                 <div className="min-w-0">
-                    <div className="flex gap-2 ">
-                        <p className={chore.isCompleted ? "truncate line-through text-muted-foreground" : "truncate"}>
+                    <div className="flex gap-2 items-center justify-center">
+                        <p className={chore.isCompleted ? "truncate line-through text-muted-foreground font-medium" : "truncate font-medium"}>
                             {chore.title} 
                         </p>
-                        <span className="inline-block mt-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+                        <span className="inline-block rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
                             {chipText}
                         </span>
                     </div>
@@ -88,6 +109,9 @@ export default function ChoreList({ chores, members, currentUserId }: ChoreListP
         <p className="text-muted-foreground text-sm ">No chores yet!</p>
         ) : null}
     </div>
+            </CardContent>
+            </Card>
+        
     );
 }
 

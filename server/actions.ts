@@ -83,6 +83,7 @@ export async function createChore(formData: FormData) {
         deadline,
     })
 
+    revalidatePath("/dashboard")
     revalidatePath("/")
 }
 
@@ -103,6 +104,7 @@ export async function deleteChore(formData: FormData) {
 
     if (!deletedRows) throw new Error ("Chore not found or you do not have permission");
 
+    revalidatePath("/dashboard")
     revalidatePath("/")
 }
 
@@ -122,5 +124,6 @@ export async function setChoreCompleted(formData: FormData) {
 
     if (!updatedRow) throw new Error("Chore not found or you do not hae permission!");
 
+    revalidatePath("/dashboard")
     revalidatePath('/');
 }

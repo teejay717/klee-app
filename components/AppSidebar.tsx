@@ -3,10 +3,17 @@ import {
     SidebarContent,
     SidebarFooter,
     SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
     SidebarHeader,
-    SidebarSeparator
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs"
+import { LayoutDashboard } from "lucide-react"
+import Link from "next/link"
 
 type AppSidebarProps = {
     identity: { name: string; email: string } | null;
@@ -22,22 +29,33 @@ export function AppSidebar({identity}: AppSidebarProps) {
             afterSelectOrganizationUrl="/"
         />
     </SidebarHeader>
-    <SidebarContent>
+    <SidebarContent className="px-2">
         <SidebarGroup />
-
+        <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+            <SidebarGroupContent>
+                <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                    <Link href="/dashboard">
+                        <LayoutDashboard />
+                        <span>Dashboard</span>
+                    </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarGroupContent>
         <SidebarGroup />
     </SidebarContent>
 
-    <SidebarSeparator />
-    <SidebarFooter>
-    <div className="flex items-center gap-4 px-2">
-        <UserButton />
-        <div className="flex flex-col">
-            <span className="text-xs font-bold">{identity?.name ?? "User"}</span>
-            <span className="text-xs text-sidebar-foreground/70">{identity?.email ?? "No Email"}</span>
-        </div>
-        </div>
-    </SidebarFooter>
+        <SidebarFooter>
+        <div className="flex items-center gap-4">
+            <UserButton />
+            <div className="flex flex-col">
+                <span className="text-xs font-bold">{identity?.name ?? "User"}</span>
+                <span className="text-xs text-sidebar-foreground/70">{identity?.email ?? "No Email"}</span>
+            </div>
+            </div>
+        </SidebarFooter>
     </Sidebar>
     )
 }
