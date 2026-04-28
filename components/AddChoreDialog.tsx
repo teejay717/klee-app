@@ -52,7 +52,7 @@ async function handleCreateChore(formData: FormData) {
 return (
     <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger asChild>
-        <Button size="lg" className="bg-blue-900 hover:bg-blue-800">+ Add chore</Button>
+        <Button size="lg" className="bg-blue-900 hover:bg-blue-800 w-full">+ Add chore</Button>
     </DialogTrigger>
 
     <DialogContent>
@@ -71,15 +71,15 @@ return (
 
         <div className="space-y-2">
             <Label htmlFor="deadline">Deadline</Label>
-            <Calendar 
+            {/* <Calendar 
                 mode="single"
                 selected={deadline}
                 onSelect={setDeadline}
                 className="rounded-lg border"
                 captionLayout="dropdown"
             />
-            <input type="hidden" name="deadline" value={deadline?.toISOString() || ""}/>
-            {/* <Input id="deadline" name="deadline" type="date" /> */}
+            <input type="hidden" name="deadline" value={deadline?.toISOString() || ""}/> */}
+            <Input id="deadline" name="deadline" type="date" />
         </div>
 
         <div className="space-y-2">
@@ -99,9 +99,19 @@ return (
             </Select>
         </div>
 
-        <DialogFooter>
-                <Button type="submit" disabled={!assigneeUserId} className="bg-blue-900 hover:bg-blue-800" size="lg">
-                Add chore
+        <DialogFooter className="flex sm:justify-between gap-3 pt-4">
+            <DialogClose asChild>
+                <Button type="button" variant="outline" size="lg" className="flex-1">
+                    Cancel
+                </Button>
+            </DialogClose>
+                <Button 
+                    type="submit" 
+                    disabled={!assigneeUserId} 
+                    className="bg-blue-900 hover:bg-blue-800 flex-1" 
+                    size="lg"
+                >
+                    Add Expense
                 </Button>
         </DialogFooter>
         </form>

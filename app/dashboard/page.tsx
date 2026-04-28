@@ -1,11 +1,13 @@
 import { db } from "@/db";
-import { chores } from "@/db/schema";
+import { chores, expenses } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import AddChoreDialog from "@/components/AddChoreDialog";
 import ChoreList from "@/components/ChoreList";
 import RoommatesCard from "@/components/RoommatesCard";
+import AddExpenseDialog from "@/components/AddExpenseDialog";
+import SharedExpensesCard from "@/components/SharedExpensesCard";
 
 export default async function Page() {
     const { userId, orgId } = await auth();
@@ -36,11 +38,23 @@ const apartmentChores = orgId
     ? await db.select().from(chores).where(eq(chores.apartmentId, orgId)) 
     : [];
 
+const apartmentExpenses = orgId 
+    ? await db.select().from(expenses).where(eq(expenses.apartmentId, orgId)) 
+    : [];
+
 return (
         <main className="max-w-7xl mx-auto mt-10 p-6 ">
             <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                    <div className="md:col-span-3">
+                        <SharedExpensesCard expenses={apartmentExpenses} members={members}/>
+                    </div>
+                    <div className="md:col-span-2">
+                        <RoommatesCard members={members} currentUserId={userId}/>
+                    </div>
+                </div>
                 <ChoreList chores={apartmentChores} members={members} currentUserId={userId} />
-                <RoommatesCard members={members} currentUserId={userId}/>
+                
             </div>
         </main>
     );

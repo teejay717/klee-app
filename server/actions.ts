@@ -1,6 +1,6 @@
 "use server";
 import { db } from "@/db";
-import { chores } from "@/db/schema";
+import { chores, expenses } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { eq, and } from "drizzle-orm"
@@ -9,6 +9,9 @@ import { clerkClient } from "@clerk/nextjs/server";
 // I put these comments for study purposes lol
 // zod Schemas
 // z.object defines the expected shape of incoming form fields.
+
+// CHORE Schemas
+
 const createChoreSchema = z.object({
     // z.string: value must be text.
     // trim: removes surrounding spaces before checks.
@@ -37,6 +40,29 @@ const setChoreCompletedStatus = z.object({
     nextCompleted: z.enum(["true", "false"]).transform((v) => v === "true"),
 })
 
+// EXPENSE Schemas
+
+const createExpenseSchema = z.object({
+    description: z.string().trim().min(1, "Description is required").max(120, "Title is too long"),
+    amount: z.coerce.number().positive("Amount must be greated than zero"),
+    category: z.string().trim().min(1, "Category is required"),
+    paidByUserId: z.string().min(1, "Please select who paid"),
+    date: z
+        .string()
+        .optional()
+        .transform((v) => (v ? new Date(v) : new Date()))
+        .refine((d) => !isNaN(d.getTime()), "Invalid date"),
+})
+
+const toggleExpensePaidSchema = z.object({
+    expenseId: z.coerce.number().int().positive("Invalid chore id"),
+    nextPaidStatus: z.enum(["true", "false"]).transform((v) => v === "true"),
+})
+
+const deleteExpenseSchema = z.object({
+    expenseId: z.coerce.number().int().positive("Invalid chore id")
+})
+
 // Generic helper that validates FormData with any schema.
 function parseFormData<T>(schema: z.ZodType<T>, formData: FormData): T {
   // Converts FormData into a plain object so Zod can validate keys/values.
@@ -55,6 +81,8 @@ function parseFormData<T>(schema: z.ZodType<T>, formData: FormData): T {
     return parsed.data;
 }
 
+
+// CHORES
 
 export async function createChore(formData: FormData) {
     const { userId, orgId } = await auth();
@@ -122,7 +150,72 @@ export async function setChoreCompleted(formData: FormData) {
     .where(and(eq(chores.id, choreId), eq(chores.apartmentId, orgId)))
     .returning({ id: chores.id })
 
-    if (!updatedRow) throw new Error("Chore not found or you do not hae permission!");
+    if (!updatedRow) throw new Error("Chore not found or you do not have permission!");
+
+    revalidatePath("/dashboard")
+    revalidatePath('/');
+}
+
+// EXPENSES
+
+export async function createExpense(formData: FormData) {
+    const { userId, orgId } = await auth();
+
+    if (!orgId) throw new Error("You must be in an Apartment to add expenses!");
+    if (!userId) throw new Error("You must be signed in to perform this action");
+
+    const { description, amount, category, paidByUserId, date } = parseFormData(createExpenseSchema, formData);
+
+    await db.insert(expenses).values({
+        description,
+        amount: amount.toString(),
+        category,
+        apartmentId: orgId,
+        paidByUserId,
+        isPaid: false,
+        date,
+    })
+
+    revalidatePath("/dashboard")
+    revalidatePath("/")
+}
+
+export async function deleteExpense(formData: FormData) {
+    const { userId, orgId } = await auth();
+
+    if (!orgId) throw new Error("You must be in an Apartment to delete chores!");
+    if (!userId) throw new Error("You must be signed in to perform this action");
+
+    const { expenseId } = parseFormData(deleteExpenseSchema, formData)
+
+    if (!expenseId) throw new Error ("Invalid chore id");
+
+    const [deletedRows] = await db
+        .delete(expenses)
+        .where(and(eq(expenses.id, expenseId), eq(expenses.apartmentId, orgId)))
+        .returning({ id: expenses.id});
+
+    if (!deletedRows) throw new Error ("Expense not found or you do not have permission");
+
+    revalidatePath("/dashboard")
+    revalidatePath("/")
+}
+
+export async function toggleExpensePaid(formData: FormData) {
+    const { userId, orgId } = await auth();
+
+    if (!orgId) throw new Error("You must be in an Apartment to toggle payment status!");
+    if (!userId) throw new Error("You must be signed in to perform this action");
+
+    const { expenseId, nextPaidStatus } = parseFormData(toggleExpensePaidSchema, formData)
+
+    const [updatedRow] = await db
+    .update(expenses)
+    .set({ isPaid: nextPaidStatus })
+    .where(and(eq(expenses.id, expenseId), eq(expenses.apartmentId, orgId)))
+    .returning({ id: expenses.id })
+
+    if (!updatedRow) throw new Error("Expense not found");
 
     revalidatePath("/dashboard")
     revalidatePath('/');

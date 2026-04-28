@@ -56,16 +56,16 @@ export default function ChoreList({ chores, members, currentUserId }: ChoreListP
 
     return (
         <Card className="shadow-md">
-            <CardHeader className="flex items-center gap-3 text-center justify-between">
+            <CardHeader className="flex items-center gap-3 justify-between">
                 <div className="flex flex-col">
-                    <CardTitle className="text-2xl font-bold">Apartment Chores</CardTitle>
+                    <CardTitle className="text-xl font-bold">Apartment Chores</CardTitle>
                     <CardDescription>Tasks assigned across roommates</CardDescription>
                 </div>
-                <CardAction className="self-auto">
-                    <AddChoreDialog members={members}/>
-                </CardAction>
             </CardHeader>
             <CardContent>
+                <div className="mb-6 w-full">
+                    <AddChoreDialog members={members} />
+                </div>
                 <div>
             {chores.map((chore) => {
                 const assignee = memberLabelById.get(chore.userId) ?? "Unknown Member";
