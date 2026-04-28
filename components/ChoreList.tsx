@@ -55,7 +55,7 @@ export default function ChoreList({ chores, members, currentUserId }: ChoreListP
     const memberLabelById = new Map(members.map((m) => [m.userId, m.label]));
 
     return (
-        <Card>
+        <Card className="shadow-md">
             <CardHeader className="flex items-center gap-3 text-center justify-between">
                 <div className="flex flex-col">
                     <CardTitle className="text-2xl font-bold">Apartment Chores</CardTitle>
@@ -72,7 +72,7 @@ export default function ChoreList({ chores, members, currentUserId }: ChoreListP
                 const chipText = chore.userId === currentUserId ? "You" : assignee.split(' ')[0];
 
                 return (
-            <div key={chore.id} className={`p-3 border rounded-md flex items-center justify-between gap-3 my-2 ${chore.isCompleted ? "bg-slate-100/80" : ""}`}>
+            <div key={chore.id} className={`p-3 border rounded-md flex items-center justify-between gap-3 my-2 ${chore.isCompleted ? "bg-slate-100/50" : ""} hover:bg-slate-100/50`}>
             <div className="flex items-center gap-3 min-w-0">
                 <form action={setChoreCompleted}>
                 <input type="hidden" name="choreId" value={String(chore.id)} />

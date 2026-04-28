@@ -24,10 +24,22 @@ export function AppSidebar({identity}: AppSidebarProps) {
     <Sidebar>
     <SidebarHeader className="border-b p-4">
         <OrganizationSwitcher 
-            hidePersonal={true} // Hides personal account so they MUST pick an apartment
-            afterCreateOrganizationUrl="/" 
-            afterSelectOrganizationUrl="/"
-        />
+    hidePersonal={true}
+    afterCreateOrganizationUrl="/" 
+    afterSelectOrganizationUrl="/"
+    appearance={{
+        elements: {
+            organizationSwitcherTrigger: `
+                px-2 py-1 
+                bg-transparent hover:bg-gray-100
+                rounded-md
+                border-none
+                font-medium text-sm
+            `,
+            organizationSwitcherPopoverCard: "shadow-lg border border-gray-200 rounded-lg",
+        }
+    }}
+/>
     </SidebarHeader>
     <SidebarContent className="px-2">
         <SidebarGroup />

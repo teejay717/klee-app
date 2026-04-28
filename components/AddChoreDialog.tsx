@@ -22,6 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar"
 
 type MemberOption = {
     userId: string;
@@ -31,6 +32,7 @@ type MemberOption = {
 export default function AddChoreDialog({ members }: { members: MemberOption[] }) {
 const defaultMember = useMemo(() => members[0]?.userId ?? "", [members]);
 const [assigneeUserId, setAssigneeUserId] = useState(defaultMember);
+const [deadline, setDeadline] = useState<Date | undefined>(undefined)
 const [open, setOpen] = useState(false);
 const [submitError, setSubmitError] = useState<string | null>(null);
 const formRef = useRef<HTMLFormElement>(null);
@@ -50,12 +52,12 @@ async function handleCreateChore(formData: FormData) {
 return (
     <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger asChild>
-        <Button size="lg" className="bg-blue-800 hover:bg-blue-600">+ Add chore</Button>
+        <Button size="lg" className="bg-blue-900 hover:bg-blue-800">+ Add chore</Button>
     </DialogTrigger>
 
     <DialogContent>
         <DialogHeader>
-        <DialogTitle>Create chore</DialogTitle>
+        <DialogTitle className="text-2xl font-bold">Create chore</DialogTitle>
         <DialogDescription>
             Add the task and assign it to an apartment member.
         </DialogDescription>
@@ -69,7 +71,15 @@ return (
 
         <div className="space-y-2">
             <Label htmlFor="deadline">Deadline</Label>
-            <Input id="deadline" name="deadline" type="date" />
+            <Calendar 
+                mode="single"
+                selected={deadline}
+                onSelect={setDeadline}
+                className="rounded-lg border"
+                captionLayout="dropdown"
+            />
+            <input type="hidden" name="deadline" value={deadline?.toISOString() || ""}/>
+            {/* <Input id="deadline" name="deadline" type="date" /> */}
         </div>
 
         <div className="space-y-2">
@@ -90,7 +100,7 @@ return (
         </div>
 
         <DialogFooter>
-                <Button type="submit" disabled={!assigneeUserId} className="bg-blue-800 hover:bg-blue-600" size="lg">
+                <Button type="submit" disabled={!assigneeUserId} className="bg-blue-900 hover:bg-blue-800" size="lg">
                 Add chore
                 </Button>
         </DialogFooter>

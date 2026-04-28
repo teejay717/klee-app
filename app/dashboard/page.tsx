@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import AddChoreDialog from "@/components/AddChoreDialog";
 import ChoreList from "@/components/ChoreList";
+import RoommatesCard from "@/components/RoommatesCard";
 
 export default async function Page() {
     const { userId, orgId } = await auth();
@@ -36,8 +37,11 @@ const apartmentChores = orgId
     : [];
 
 return (
-    <main className="max-w-7xl mx-auto mt-10 p-6">
-        <ChoreList chores={apartmentChores} members={members} currentUserId={userId} />
-    </main>
+        <main className="max-w-7xl mx-auto mt-10 p-6 ">
+            <div className="flex flex-col gap-4">
+                <ChoreList chores={apartmentChores} members={members} currentUserId={userId} />
+                <RoommatesCard members={members} currentUserId={userId}/>
+            </div>
+        </main>
     );
 }
