@@ -24,13 +24,17 @@ type ChoreItem = {
     title: string,
     userId: string,
     deadline: Date | null,
-    isCompleted: boolean
+    isCompleted: boolean,
+    completedAt?: Date | string | null
 }
 
 type ChoreListProps = {
     chores: ChoreItem[],
     members: MemberOption[],
-    currentUserId: string | null
+    currentUserId: string | null,
+    buttonOn?: boolean,
+    title?: String,
+    description?: String,
 }
 
 function getDeadlineLabel(deadline: Date | string | null) {
@@ -51,25 +55,33 @@ function getDeadlineLabel(deadline: Date | string | null) {
     return Math.abs(diffDays) + " days ago";
 }
 
-export default function ChoreList({ chores, members, currentUserId }: ChoreListProps) {
+export default function ChoreList({ chores, members, currentUserId, buttonOn = true, title = "Apartment Chores", description = "Recent tasks assigned across roommates" }: ChoreListProps) {
     const memberLabelById = new Map(members.map((m) => [m.userId, m.label]));
 
     return (
         <Card className="shadow-md">
             <CardHeader className="flex items-center gap-3 justify-between">
                 <div className="flex flex-col">
-                    <CardTitle className="text-xl font-bold">Apartment Chores</CardTitle>
-                    <CardDescription>Tasks assigned across roommates</CardDescription>
+                    <CardTitle className="text-xl font-bold">{title}</CardTitle>
+                    <CardDescription>{description}</CardDescription>
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="mb-6 w-full">
-                    <AddChoreDialog members={members} />
-                </div>
+                {buttonOn ? (
+                    <div className="mb-6 w-full">
+                        <AddChoreDialog members={members} />
+                    </div>) : null}
                 <div>
             {chores.map((chore) => {
                 const assignee = memberLabelById.get(chore.userId) ?? "Unknown Member";
                 const chipText = chore.userId === currentUserId ? "You" : assignee.split(' ')[0];
+
+                const dateLabel = chore.isCompleted && chore.completedAt ? 
+                    `Completed on ${new Date(chore.completedAt).toLocaleDateString('en-US', { 
+                        month: 'long', 
+                        day: 'numeric' 
+                    })}` 
+                    : getDeadlineLabel(chore.deadline);
 
                 return (
             <div key={chore.id} className={`p-3 border rounded-md flex items-center justify-between gap-3 my-2 ${chore.isCompleted ? "bg-slate-100/50" : ""} hover:bg-slate-100/50`}>
@@ -81,16 +93,16 @@ export default function ChoreList({ chores, members, currentUserId }: ChoreListP
                 </form>
 
                 <div className="min-w-0">
-                    <div className="flex gap-2 items-center justify-center">
+                    <div className="flex gap-2 items-center justify-start">
                         <p className={chore.isCompleted ? "truncate line-through text-muted-foreground font-medium" : "truncate font-medium"}>
                             {chore.title} 
                         </p>
-                        <span className="inline-block rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+                        <span className="inline-block rounded-md bg-slate-200/80 px-2 py-1 text-xs font-medium text-blue-900">
                             {chipText}
                         </span>
                     </div>
                     <p className="mt-1 text-xs text-slate-600">
-                        {getDeadlineLabel(chore.deadline)}
+                        {dateLabel}
                     </p>
                 </div>
             </div>

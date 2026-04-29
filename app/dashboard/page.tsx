@@ -3,11 +3,11 @@ import { chores, expenses } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
-import AddChoreDialog from "@/components/AddChoreDialog";
 import ChoreList from "@/components/ChoreList";
 import RoommatesCard from "@/components/RoommatesCard";
-import AddExpenseDialog from "@/components/AddExpenseDialog";
 import SharedExpensesCard from "@/components/SharedExpensesCard";
+import HeaderComponent from "@/components/HeaderComponent";
+import AddChoreDialog from "@/components/AddChoreDialog";
 
 export default async function Page() {
     const { userId, orgId } = await auth();
@@ -32,7 +32,6 @@ export default async function Page() {
     }
 }).filter((m): m is { userId: string; label: string } => m !== null);
 
-
   // Fetch only chores for THIS apartment
 const apartmentChores = orgId 
     ? await db.select().from(chores).where(eq(chores.apartmentId, orgId)) 
@@ -42,7 +41,25 @@ const apartmentExpenses = orgId
     ? await db.select().from(expenses).where(eq(expenses.apartmentId, orgId)) 
     : [];
 
+const activeChores = apartmentChores
+    .filter(chore => !chore.isCompleted)
+    .sort((a, b) => {
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+});
+
+const completedChores = apartmentChores.filter(chore => chore.isCompleted).sort((a, b) => {
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+});
+
+const dashboardChores = [...activeChores, ...completedChores].slice(0,5)
+
 return (
+    <div>
+        <HeaderComponent title="Dashboard" description="Welcome back! Here's your apartment overview."/>
         <main className="max-w-7xl mx-auto mt-10 p-6 ">
             <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
@@ -53,9 +70,10 @@ return (
                         <RoommatesCard members={members} currentUserId={userId}/>
                     </div>
                 </div>
-                <ChoreList chores={apartmentChores} members={members} currentUserId={userId} />
+                <ChoreList chores={dashboardChores} members={members} currentUserId={userId} buttonOn={true}/>
                 
             </div>
         </main>
+    </div>
     );
 }

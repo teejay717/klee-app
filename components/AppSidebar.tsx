@@ -12,7 +12,7 @@ import {
     SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs"
-import { LayoutDashboard } from "lucide-react"
+import { LayoutDashboard, SquareCheckBig } from "lucide-react"
 import Link from "next/link"
 
 type AppSidebarProps = {
@@ -51,6 +51,21 @@ export function AppSidebar({identity}: AppSidebarProps) {
                     <Link href="/dashboard">
                         <LayoutDashboard />
                         <span>Dashboard</span>
+                    </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarGroupContent>
+        <SidebarGroup />
+        <SidebarGroup />
+        <SidebarGroupLabel>Daily Life</SidebarGroupLabel>
+            <SidebarGroupContent>
+                <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                    <Link href="/chores">
+                        <SquareCheckBig  />
+                        <span>Chores</span>
                     </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -29,7 +29,7 @@ type MemberOption = {
     label: string;
 };
 
-export default function AddChoreDialog({ members }: { members: MemberOption[] }) {
+export default function AddChoreDialog({ members, className = "bg-blue-900 hover:bg-blue-800 w-full" }: { members: MemberOption[], className?: string }) {
 const defaultMember = useMemo(() => members[0]?.userId ?? "", [members]);
 const [assigneeUserId, setAssigneeUserId] = useState(defaultMember);
 const [deadline, setDeadline] = useState<Date | undefined>(undefined)
@@ -52,7 +52,7 @@ async function handleCreateChore(formData: FormData) {
 return (
     <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger asChild>
-        <Button size="lg" className="bg-blue-900 hover:bg-blue-800 w-full">+ Add chore</Button>
+        <Button size="lg" className={className}>+ Add chore</Button>
     </DialogTrigger>
 
     <DialogContent>
@@ -111,7 +111,7 @@ return (
                     className="bg-blue-900 hover:bg-blue-800 flex-1" 
                     size="lg"
                 >
-                    Add Expense
+                    Add Chore
                 </Button>
         </DialogFooter>
         </form>

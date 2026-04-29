@@ -146,13 +146,14 @@ export async function setChoreCompleted(formData: FormData) {
 
     const [updatedRow] = await db
     .update(chores)
-    .set({ isCompleted: nextCompleted })
+    .set({ isCompleted: nextCompleted, completedAt: nextCompleted ? new Date() : null })
     .where(and(eq(chores.id, choreId), eq(chores.apartmentId, orgId)))
     .returning({ id: chores.id })
 
     if (!updatedRow) throw new Error("Chore not found or you do not have permission!");
 
     revalidatePath("/dashboard")
+    revalidatePath("/chores")
     revalidatePath('/');
 }
 

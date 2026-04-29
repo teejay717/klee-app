@@ -1,4 +1,5 @@
 import { pgTable, serial, text, boolean, timestamp, numeric } from 'drizzle-orm/pg-core';
+import { timeStamp } from 'node:console';
 
 export const chores = pgTable('chores', {
     id: serial('id').primaryKey(),
@@ -8,7 +9,9 @@ export const chores = pgTable('chores', {
     createdByUserId: text('created_by_user_id').notNull(),
     deadline: timestamp('deadline'),
     isCompleted: boolean('is_completed').notNull().default(false),
+    completedAt: timestamp('completed_at'),
     createdAt: timestamp('created_at').defaultNow()
+
 });
 
 export const expenses = pgTable('expenses', {
