@@ -103,16 +103,27 @@ export default function ChoreList({ chores, members, currentUserId, buttonOn = t
                     </div>
                     <p className="mt-1 text-xs text-slate-600">
                         {dateLabel}
+                        
                     </p>
                 </div>
             </div>
-
+            <div className="flex flex-row gap-0">
+                {members && members.length > 0 ? (
+                        members.map((member) => (
+                            <div key={member.userId} className="flex items-center">
+                                {member.userId === chore.userId ? (<div className="w-8 h-8 mr-2 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                    {member.label[0]}
+                                </div>) : null}
+                            </div>
+                        ))
+                    ) : null}
             <form action={deleteChore}>
                 <input type="hidden" name="choreId" value={String(chore.id)} />
-                <Button type="submit" variant="destructive">
+                <Button type="submit" variant="ghost" size="icon" className="hover:cursor-pointer text-slate-600 hover:text-red-500">
                     <Trash />
                 </Button>
             </form>
+            </div>
             </div>
         );
         })}
