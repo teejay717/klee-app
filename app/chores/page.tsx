@@ -39,7 +39,7 @@ export default async function Page() {
         <div>
             <HeaderComponent title="Chore History" description="Track completed tasks and assignments" children={<AddChoreDialog members={members} className="bg-blue-900 hover:bg-blue-800 px-8 py-6 text-lg font-semibold min-w-[200px]"/>}/>
             <main className="max-w-7xl mx-auto mt-10 p-6 space-y-10">
-            <FilterableChoreList allChores={apartmentChores} members={members} currentUserId={userId}/>
+                <FilterableChoreList allChores={apartmentChores} members={members} currentUserId={userId}/>
             <section>
                 <ChoreList chores={activeChores} members={members} currentUserId={userId} buttonOn={false} title="Incomplete Chores"/>
             </section>

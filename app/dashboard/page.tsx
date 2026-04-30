@@ -50,10 +50,14 @@ const activeChores = apartmentChores
 });
 
 const completedChores = apartmentChores.filter(chore => chore.isCompleted).sort((a, b) => {
-        if (!a.deadline) return 1;
-        if (!b.deadline) return -1;
-        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+        // if there is no completion date move to the bottom
+        if (!a.completedAt) return 1;
+        if (!b.completedAt) return -1;
+        // shows latest/recently completed first
+        return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
 });
+
+
 
 const dashboardChores = [...activeChores, ...completedChores].slice(0,5)
 

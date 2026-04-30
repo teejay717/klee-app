@@ -52,7 +52,7 @@ function getDeadlineLabel(deadline: Date | string | null) {
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Tomorrow";
     if (diffDays > 1) return "In " + diffDays + " days";
-    return Math.abs(diffDays) + " days ago";
+    return Math.abs(diffDays) + " day(s) ago";
 }
 
 export default function ChoreList({ chores, members, currentUserId, buttonOn = true, title = "Apartment Chores", description = "Recent tasks assigned across roommates" }: ChoreListProps) {

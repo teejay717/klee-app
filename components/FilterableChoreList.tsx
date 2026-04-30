@@ -28,11 +28,12 @@ export default function FilterableChoreList({ allChores, members, currentUserId}
         if (activeTab === 'all') return true; 
 
         const completedAt = new Date(chore.completedAt);
-
         if (activeTab === 'week') return completedAt >= oneWeekAgo;
-
         if (activeTab === 'month') return completedAt >= oneMonthAgo;
-    })
+
+        return false;
+    }).sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
+    
 
     return (
         <div>
