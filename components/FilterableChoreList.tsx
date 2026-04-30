@@ -6,7 +6,7 @@ import ChoreList from "./ChoreList";
 
 interface FilterableChoreListProps {
     allChores: any[];
-    members: { userId: string; label: string }[];
+    members: { userId: string; label: string; initials: string }[];
     currentUserId: string | null;
 }
 

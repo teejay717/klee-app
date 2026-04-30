@@ -1,5 +1,4 @@
-import { pgTable, serial, text, boolean, timestamp, numeric } from 'drizzle-orm/pg-core';
-import { timeStamp } from 'node:console';
+import { pgTable, serial, text, boolean, timestamp, numeric, integer } from 'drizzle-orm/pg-core';
 
 export const chores = pgTable('chores', {
     id: serial('id').primaryKey(),
@@ -22,6 +21,12 @@ export const expenses = pgTable('expenses', {
     category: text('category').notNull(),
     paidByUserId: text('paid_by_user_id').notNull(),
     date: timestamp('date'),
-    isPaid: boolean('is_paid').notNull().default(false),
     createdAt: timestamp('created_at').defaultNow()
 });
+
+export const expenseParticipation = pgTable('expense_participation', {
+    id: serial('id').primaryKey(),
+    expenseId: integer('expense_id').notNull().references(() => expenses.id, { onDelete: 'cascade'}),
+    userId: text('user_id').notNull(),
+    isPaid: boolean('is_paid').notNull().default(false),
+})

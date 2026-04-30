@@ -1,11 +1,12 @@
 import { db } from "@/db";
-import { chores } from "@/db/schema";
+import { expenses, expenseParticipation } from "@/db/schema";
 import HeaderComponent from "@/components/HeaderComponent"
-import ChoreList from "@/components/ChoreList"
 import { auth, clerkClient } from "@clerk/nextjs/server"
-import { eq } from "drizzle-orm";
-import AddChoreDialog from "@/components/AddChoreDialog";
+import { eq, inArray } from "drizzle-orm";
 import FilterableChoreList from "@/components/FilterableChoreList";
+import ExpenseList from "@/components/ExpensesList";
+import AddExpenseDialog from "@/components/AddExpenseDialog";
+
 
 export default async function Page() {
     const { userId, orgId } = await auth();
@@ -31,19 +32,23 @@ export default async function Page() {
     }
 }).filter((m): m is { userId: string; label: string; initials: string } => m !== null);
 
-    const apartmentChores = orgId 
-        ? await db.select().from(chores).where(eq(chores.apartmentId, orgId)) 
+    const apartmentExpenses = orgId 
+        ? await db.select().from(expenses).where(eq(expenses.apartmentId, orgId)) 
         : [];
-    
-    const activeChores = apartmentChores.filter(c => !c.isCompleted);
+
+    const participations = apartmentExpenses.length > 0 
+        ? await db.select()
+            .from(expenseParticipation)
+            .where(inArray(expenseParticipation.expenseId, apartmentExpenses.map(e => e.id)))
+        : [];
 
     return (
         <div>
-            <HeaderComponent title="Chore History" description="Track completed tasks and assignments" children={<AddChoreDialog members={members} className="bg-blue-900 hover:bg-blue-800 px-8 py-6 text-lg font-semibold min-w-[200px]"/>}/>
+            <HeaderComponent title="Expenses" description="Track and split shared costs" children={<AddExpenseDialog members={members} className="bg-blue-900 hover:bg-blue-800 px-8 py-6 text-lg font-semibold min-w-[200px]"/>}/>
             <main className="max-w-7xl mx-auto mt-10 p-6 space-y-10">
-                <FilterableChoreList allChores={apartmentChores} members={members} currentUserId={userId} />
+                <FilterableChoreList allChores={apartmentExpenses} members={members} currentUserId={userId} />
             <section>
-                <ChoreList chores={activeChores} members={members} currentUserId={userId} buttonOn={false} title="Incomplete Chores" description="Incomplete tasks assigned to roommates"/>
+                <ExpenseList expenses={apartmentExpenses} expenseParticipation={participations} members={members} currentUserId={userId}/>
             </section>
         </main>
         </div>

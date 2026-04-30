@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { chores, expenses } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { chores, expenseParticipation, expenses } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import ChoreList from "@/components/ChoreList";
@@ -40,7 +40,24 @@ const apartmentChores = orgId
     : [];
 
 const apartmentExpenses = orgId 
-    ? await db.select().from(expenses).where(eq(expenses.apartmentId, orgId)) 
+    ? await db.select({
+        id: expenses.id,
+        description: expenses.description,
+        amount: expenses.amount,
+        category: expenses.category,
+        paidByUserId: expenses.paidByUserId,
+        date: expenses.date,
+        // This is the key: get the status ONLY for the current user
+        isPaid: expenseParticipation.isPaid})
+        .from(expenses)
+        .leftJoin(
+        expenseParticipation, 
+        and(
+            eq(expenses.id, expenseParticipation.expenseId),
+            eq(expenseParticipation.userId, userId!)
+        )
+    )
+    .where(eq(expenses.apartmentId, orgId)) 
     : [];
 
 const activeChores = apartmentChores

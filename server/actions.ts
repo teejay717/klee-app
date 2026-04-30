@@ -1,6 +1,6 @@
 "use server";
 import { db } from "@/db";
-import { chores, expenses } from "@/db/schema";
+import { chores, expenses, expenseParticipation } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { eq, and } from "drizzle-orm"
@@ -167,15 +167,30 @@ export async function createExpense(formData: FormData) {
 
     const { description, amount, category, paidByUserId, date } = parseFormData(createExpenseSchema, formData);
 
-    await db.insert(expenses).values({
+    const [insertedExpense] = await db.insert(expenses).values({
         description,
         amount: amount.toString(),
         category,
         apartmentId: orgId,
         paidByUserId,
-        isPaid: false,
         date,
-    })
+    }).returning({ id: expenses.id});
+
+    const client = await clerkClient();
+    const memberships = await client.organizations.getOrganizationMembershipList({ 
+        organizationId: orgId 
+    });
+
+    if (memberships.data.length > 0) {
+        await db.insert(expenseParticipation).values(
+            memberships.data.map((m) => ({
+                expenseId: insertedExpense.id,
+                userId: m.publicUserData?.userId!,
+                isPaid: m.publicUserData?.userId === paidByUserId
+            }))
+        )
+    }
+    
 
     revalidatePath("/dashboard")
     revalidatePath("/")
@@ -211,12 +226,12 @@ export async function toggleExpensePaid(formData: FormData) {
     const { expenseId, nextPaidStatus } = parseFormData(toggleExpensePaidSchema, formData)
 
     const [updatedRow] = await db
-    .update(expenses)
-    .set({ isPaid: nextPaidStatus })
-    .where(and(eq(expenses.id, expenseId), eq(expenses.apartmentId, orgId)))
-    .returning({ id: expenses.id })
+        .update(expenseParticipation)
+        .set({ isPaid: nextPaidStatus })
+        .where(and(eq(expenseParticipation.expenseId, expenseId), eq(expenseParticipation.userId, userId)))
+        .returning({ id: expenseParticipation.id })
 
-    if (!updatedRow) throw new Error("Expense not found");
+    if (!updatedRow) throw new Error("Participation record not found");
 
     revalidatePath("/dashboard")
     revalidatePath('/');

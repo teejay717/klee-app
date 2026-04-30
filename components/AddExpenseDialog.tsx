@@ -29,7 +29,7 @@ type MemberOption = {
     label: string;
 };
 
-export default function AddExpenseDialog({ members }: { members: MemberOption[] }) {
+export default function AddExpenseDialog({ members, className = "bg-blue-900 hover:bg-blue-800 w-full" }: { members: MemberOption[], className?: string }) {
 const defaultMember = useMemo(() => members[0]?.userId ?? "", [members]);
 const [paidByUserId, setPaidByUserId] = useState(defaultMember);
 const [date, setDate] = useState<Date | undefined>(undefined)
@@ -67,7 +67,7 @@ async function handleCreateExpense(formData: FormData) {
 return (
     <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger asChild>
-        <Button size="lg" className="bg-blue-900 hover:bg-blue-800">+ Add Expense</Button>
+        <Button size="lg" className={className}>+ Add Expense</Button>
     </DialogTrigger>
 
     <DialogContent>

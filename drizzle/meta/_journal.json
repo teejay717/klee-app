@@ -29,6 +29,13 @@
       "when": 1777474078554,
       "tag": "0003_ambiguous_guardsmen",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1777567627191,
+      "tag": "0004_unknown_power_pack",
+      "breakpoints": true
     }
   ]
 }

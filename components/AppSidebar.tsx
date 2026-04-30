@@ -72,6 +72,21 @@ export function AppSidebar({identity}: AppSidebarProps) {
                 </SidebarMenu>
             </SidebarGroupContent>
         <SidebarGroup />
+        <SidebarGroup />
+        <SidebarGroupLabel>Finances</SidebarGroupLabel>
+            <SidebarGroupContent>
+                <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                    <Link href="/expenses">
+                        <SquareCheckBig  />
+                        <span>Expenses</span>
+                    </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarGroupContent>
+        <SidebarGroup />
     </SidebarContent>
 
         <SidebarFooter>
