@@ -25,12 +25,14 @@ export default async function Page() {
     if (!user?.userId) return null;
 
     const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
+    const initials = [user.firstName?.charAt(0), user.lastName?.charAt(0)].filter(Boolean).join("").toUpperCase();
 
     return {
         userId: user.userId,
         label: fullName || user.identifier || "Unknown Member",
+        initials: initials
     }
-}).filter((m): m is { userId: string; label: string } => m !== null);
+}).filter((m): m is { userId: string; label: string; initials: string } => m !== null);
 
   // Fetch only chores for THIS apartment
 const apartmentChores = orgId 

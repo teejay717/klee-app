@@ -16,7 +16,8 @@ import AddChoreDialog from "./AddChoreDialog";
 
 type MemberOption = {
     userId: string,
-    label: string
+    label: string,
+    initials?: string
 }
 
 type ChoreItem = {
@@ -107,22 +108,24 @@ export default function ChoreList({ chores, members, currentUserId, buttonOn = t
                     </p>
                 </div>
             </div>
-            <div className="flex flex-row gap-0">
-                {members && members.length > 0 ? (
-                        members.map((member) => (
-                            <div key={member.userId} className="flex items-center">
-                                {member.userId === chore.userId ? (<div className="w-8 h-8 mr-2 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                                    {member.label[0]}
-                                </div>) : null}
-                            </div>
-                        ))
-                    ) : null}
-            <form action={deleteChore}>
-                <input type="hidden" name="choreId" value={String(chore.id)} />
-                <Button type="submit" variant="ghost" size="icon" className="hover:cursor-pointer text-slate-600 hover:text-red-500">
-                    <Trash />
-                </Button>
-            </form>
+            
+            <div className="flex items-center gap-2">
+                {(() => {
+                    const member = members.find(m => m.userId === chore.userId);
+                    if (!member) return null;
+                    return (
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-sm">
+                            {member.initials || member.label[0]}
+                        </div>
+                    );
+                })()}
+
+                <form action={deleteChore}>
+                    <input type="hidden" name="choreId" value={String(chore.id)} />
+                    <Button type="submit" variant="ghost" size="icon" className="group hover:cursor-pointer text-slate-400 hover:text-red-500 transition-colors">
+                        <Trash className="w-4 h-4" />
+                    </Button>
+                </form>
             </div>
             </div>
         );
