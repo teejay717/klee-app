@@ -51,6 +51,7 @@ export default function FilterableChoreList({ allChores, members, currentUserId}
                     currentUserId={currentUserId} 
                     buttonOn={false}
                     title={tabTitle}
+                    description={`${filteredChores.length} Tasks completed`}
                 />
             </TabsContent>
             </Tabs>
