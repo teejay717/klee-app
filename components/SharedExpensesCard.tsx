@@ -17,18 +17,37 @@ type MemberOption = {
 }
 
 type ExpenseItem = {
-    amount: string | number
+    id: number
+    amount: string | number,
+}
+
+type ParticipationItem = {
+    userId: string,
+    expenseId: number,
+    isPaid: boolean
 }
 
 type ExpensesCardProps = {
     members: MemberOption[],
-    expenses: ExpenseItem[]
+    expenses: ExpenseItem[],
+    expenseParticipation: ParticipationItem[],
+    currentUserId: string | null
 }
 
 
-export default function SharedExpensesCard({ members, expenses }: ExpensesCardProps) {
+export default function SharedExpensesCard({ members, expenses, expenseParticipation = [], currentUserId }: ExpensesCardProps) {
     const totalAmount = expenses.reduce((acc, item) => acc + Number(item.amount), 0);
-    const yourShare = members.length > 0 ? totalAmount / members.length : 0
+
+    const yourShare = expenses.reduce((acc, expense) => {
+
+        const myParticipation = expenseParticipation.find(p => p.expenseId === expense.id && p.userId === currentUserId);
+        
+        const amountToAdd = (myParticipation && !myParticipation.isPaid) 
+            ? (Number(expense.amount) / members.length) 
+            : 0;
+
+        return acc + amountToAdd
+    }, 0);
 
     const formatCurrency = (num: number) => {
         return new Intl.NumberFormat('en-PH', {
@@ -64,7 +83,7 @@ export default function SharedExpensesCard({ members, expenses }: ExpensesCardPr
                 <div className="space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">Your Share</p>
                     <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-primary">{formatCurrency(yourShare)}</span>
+                    <span className="text-3xl font-bold text-blue-900">{formatCurrency(yourShare)}</span>
                     </div>
                     <p className="text-xs text-muted-foreground">What you owe this month</p>
                 </div>

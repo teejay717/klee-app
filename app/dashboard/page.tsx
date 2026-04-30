@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { chores, expenseParticipation, expenses } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import ChoreList from "@/components/ChoreList";
@@ -76,9 +76,13 @@ const completedChores = apartmentChores.filter(chore => chore.isCompleted).sort(
         return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
 });
 
-
-
 const dashboardChores = [...activeChores, ...completedChores].slice(0,5)
+
+const participations = apartmentExpenses.length > 0 
+        ? await db.select()
+            .from(expenseParticipation)
+            .where(inArray(expenseParticipation.expenseId, apartmentExpenses.map(e => e.id)))
+        : [];
 
 return (
     <div>
@@ -87,7 +91,7 @@ return (
             <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                     <div className="md:col-span-3">
-                        <SharedExpensesCard expenses={apartmentExpenses} members={members}/>
+                        <SharedExpensesCard expenses={apartmentExpenses} members={members} expenseParticipation={participations} currentUserId={userId}/>
                     </div>
                     <div className="md:col-span-2">
                         <RoommatesCard members={members} currentUserId={userId}/>
