@@ -48,7 +48,7 @@ export default async function Page() {
             <HeaderComponent title="Expenses" description="Track and split shared costs" children={<AddExpenseDialog members={members} className="bg-blue-900 hover:bg-blue-800 px-8 py-6 text-lg font-semibold min-w-[200px]"/>}/>
             <main className="max-w-7xl mx-auto mt-10 p-6 space-y-10">
                 <ExpensesCards expenses={apartmentExpenses} members={members} expenseParticipation={participations} currentUserId={userId}/>
-                <FilterableChoreList allChores={apartmentExpenses} members={members}  currentUserId={userId} />
+                {/* <FilterableChoreList allChores={apartmentExpenses} members={members}  currentUserId={userId} /> */}
             <section>
                 <ExpenseList expenses={apartmentExpenses} expenseParticipation={participations} members={members} currentUserId={userId}/>
             </section>
