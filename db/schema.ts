@@ -20,7 +20,7 @@ export const expenses = pgTable('expenses', {
     apartmentId: text('apartment_id').notNull(),
     category: text('category').notNull(),
     paidByUserId: text('paid_by_user_id').notNull(),
-    date: timestamp('date'),
+    date: timestamp('date').notNull().defaultNow(),
     createdAt: timestamp('created_at').defaultNow()
 });
 

@@ -59,7 +59,7 @@ export default function ExpensesCards({ members, expenses, expenseParticipation 
         }).format(num);
     };
     
-   return (
+return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
         <Card className="shadow-md">
             <CardHeader className="pb-2">

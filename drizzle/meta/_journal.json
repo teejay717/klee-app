@@ -36,6 +36,13 @@
       "when": 1777567627191,
       "tag": "0004_unknown_power_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1777821316864,
+      "tag": "0005_pretty_james_howlett",
+      "breakpoints": true
     }
   ]
 }

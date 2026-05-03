@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { chores, expenseParticipation, expenses } from "@/db/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, gte } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import ChoreList from "@/components/ChoreList";
@@ -39,6 +39,8 @@ const apartmentChores = orgId
     ? await db.select().from(chores).where(eq(chores.apartmentId, orgId)) 
     : [];
 
+const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
 const apartmentExpenses = orgId 
     ? await db.select({
         id: expenses.id,
@@ -57,7 +59,7 @@ const apartmentExpenses = orgId
             eq(expenseParticipation.userId, userId!)
         )
     )
-    .where(eq(expenses.apartmentId, orgId)) 
+    .where(and(eq(expenses.apartmentId, orgId), gte(expenses.date, thirtyDaysAgo))) 
     : [];
 
 const activeChores = apartmentChores
