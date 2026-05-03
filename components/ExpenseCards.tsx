@@ -16,6 +16,11 @@ type MemberOption = {
     label: string
 }
 
+type FilteredExpenseItem = {
+    id: number
+    amount: string | number,
+}
+
 type ExpenseItem = {
     id: number
     amount: string | number,
@@ -29,16 +34,23 @@ type ParticipationItem = {
 
 type ExpensesCardProps = {
     members: MemberOption[],
+    filteredExpenses: FilteredExpenseItem[],
     expenses: ExpenseItem[],
     expenseParticipation: ParticipationItem[],
-    currentUserId: string | null
+    currentUserId: string | null,
+    activeTab: string
 }
 
 
-export default function ExpensesCards({ members, expenses, expenseParticipation = [], currentUserId }: ExpensesCardProps) {
-    const totalAmount = expenses.reduce((acc, item) => acc + Number(item.amount), 0);
+export default function ExpensesCards({ members, filteredExpenses, expenseParticipation = [], currentUserId, activeTab }: ExpensesCardProps) {
+
+    const tabTitle = activeTab === 'all' ?
+        "All Time" : activeTab === 'week' ?
+        "Last 7 Days" : "Last 30 Days";
     
-    const yourShare = expenses.reduce((acc, expense) => {
+    const totalPeriodAmount = filteredExpenses.reduce((acc, item) => acc + Number(item.amount), 0);
+
+    const yourPeriodShare = filteredExpenses.reduce((acc, expense) => {
 
         const myParticipation = expenseParticipation.find(p => p.expenseId === expense.id && p.userId === currentUserId);
         
@@ -47,7 +59,14 @@ export default function ExpensesCards({ members, expenses, expenseParticipation 
             : 0;
 
         return acc + amountToAdd
-    }, 0);
+    }, 0)
+
+    const unpaidExpenses = filteredExpenses.reduce((acc, expense) => {
+        const myParticipation = expenseParticipation.find(p => p.expenseId === expense.id && p.userId === currentUserId && !p.isPaid);
+        const amountToAdd = myParticipation ? 1 : 0;
+
+        return acc + amountToAdd;
+    }, 0)
     // go through expenses -> for each expense check the participations of each member - > if they paid already, we do not add their share anymore to the total "you share" amount
     // the issue is i dont know how to go from expenses to each participations
 
@@ -70,10 +89,10 @@ return (
             <CardContent>
                 <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-foreground">
-                        {formatCurrency(totalAmount)}
+                        {formatCurrency(totalPeriodAmount)}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                        {expenses.length} expenses
+                        {filteredExpenses.length} expenses
                     </span>
                 </div>
             </CardContent>
@@ -86,9 +105,12 @@ return (
                 </CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="flex items-baseline justify-between">
+                <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-blue-900">
-                        {formatCurrency(yourShare)}
+                        {formatCurrency(yourPeriodShare)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                        {tabTitle}
                     </span>
                     {/* Optional: You can add the percentage indicator here if you have the trend data */}
                 </div>
@@ -98,16 +120,16 @@ return (
         <Card className="shadow-sm">
             <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                    This Period
+                    Total Unpaid Expenses
                 </CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-foreground">
-                        {formatCurrency(totalAmount)}
+                    <span className="text-3xl font-bold text-blue-900">
+                        {unpaidExpenses}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                        {expenses.length} expenses
+                        {`Unpaid Expense(s)`} 
                     </span>
                 </div>
             </CardContent>

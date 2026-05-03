@@ -62,7 +62,7 @@ export default function SharedExpensesCard({ members, expenses, expenseParticipa
             <CardHeader className="flex flex-row items-center justify-between">
                 <div className="flex flex-col">
                 <CardTitle className="text-xl font-bold">Shared Expenses</CardTitle>
-                <CardDescription>This month's overview</CardDescription>
+                <CardDescription>Past 30 days overview</CardDescription>
             </div>
                 <CardAction className="self-auto">
                     <AddExpenseDialog members={members} />
@@ -77,7 +77,7 @@ export default function SharedExpensesCard({ members, expenses, expenseParticipa
                     <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-foreground">{formatCurrency(totalAmount)}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">Utilities, groceries, supplies</p>
+                    <p className="text-xs text-muted-foreground">Rent, groceries, supplies</p>
                 </div>
 
                 <div className="space-y-2">
@@ -85,7 +85,7 @@ export default function SharedExpensesCard({ members, expenses, expenseParticipa
                     <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-blue-900">{formatCurrency(yourShare)}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">What you owe this month</p>
+                    <p className="text-xs text-muted-foreground">Unpaid from past 30 days</p>
                 </div>
                 </div>
             </CardContent>
