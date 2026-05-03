@@ -9,12 +9,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import AddExpenseDialog from "./AddExpenseDialog";
-
-type MemberOption = {
-    userId: string,
-    label: string
-}
+import { useApartment } from "@/context/ApartmentContext";
 
 type FilteredExpenseItem = {
     id: number
@@ -33,17 +28,15 @@ type ParticipationItem = {
 }
 
 type ExpensesCardProps = {
-    members: MemberOption[],
     filteredExpenses: FilteredExpenseItem[],
     expenses: ExpenseItem[],
     expenseParticipation: ParticipationItem[],
-    currentUserId: string | null,
     activeTab: string
 }
 
 
-export default function ExpensesCards({ members, filteredExpenses, expenseParticipation = [], currentUserId, activeTab }: ExpensesCardProps) {
-
+export default function ExpensesCards({ filteredExpenses, expenseParticipation = [], activeTab }: ExpensesCardProps) {
+    const { members, currentUserId } = useApartment()
     const tabTitle = activeTab === 'all' ?
         "All Time" : activeTab === 'week' ?
         "Last 7 Days" : "Last 30 Days";

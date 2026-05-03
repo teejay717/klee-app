@@ -1,9 +1,7 @@
 import { deleteExpense, toggleExpensePaid } from "@/server/actions";
 import { Button } from "@/components/ui/button";
 import { Badge } from '@/components/ui/badge'
-import { Check, Trash } from "lucide-react";
-import { Checkbox } from "./ui/checkbox";
-import { diff } from "node:util";
+import { Trash } from "lucide-react";
 import {
     Card,
     CardAction,
@@ -13,13 +11,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import AddChoreDialog from "./AddChoreDialog";
-
-type MemberOption = {
-    userId: string,
-    label: string,
-    initials?: string
-}
+import { useApartment } from "@/context/ApartmentContext";
 
 type ExpenseItem = {
     id: number,
@@ -41,15 +33,14 @@ type ExpenseParticipation = {
 
 type ExpenseListProps = {
     expenses: ExpenseItem[],
-    members: MemberOption[],
     expenseParticipation: ExpenseParticipation[],
-    currentUserId: string | null,
     buttonOn?: boolean,
     title?: String,
     description?: String,
 }
 
-export default function ExpenseList({ expenses, expenseParticipation = [], members, currentUserId, buttonOn = true, title = "Expenses", description = "Shared expenses and their payment status" }: ExpenseListProps) {
+export default function ExpenseList({ expenses, expenseParticipation = [], buttonOn = true, title = "Expenses", description = "Shared expenses and their payment status" }: ExpenseListProps) {
+    const { members, currentUserId } = useApartment()
     const memberLabelById = new Map(members.map((m) => [m.userId, m.label]));
 
     const totalAmount = expenses.reduce((acc, item) => acc + Number(item.amount), 0);

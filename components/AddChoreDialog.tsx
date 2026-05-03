@@ -23,13 +23,10 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar"
+import { useApartment } from "@/context/ApartmentContext";
 
-type MemberOption = {
-    userId: string;
-    label: string;
-};
-
-export default function AddChoreDialog({ members, className = "bg-blue-900 hover:bg-blue-800 w-full" }: { members: MemberOption[], className?: string }) {
+export default function AddChoreDialog({ className = "bg-blue-900 hover:bg-blue-800 w-full" }) {
+const { members } = useApartment()
 const defaultMember = useMemo(() => members[0]?.userId ?? "", [members]);
 const [assigneeUserId, setAssigneeUserId] = useState(defaultMember);
 const [deadline, setDeadline] = useState<Date | undefined>(undefined)

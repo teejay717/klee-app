@@ -1,7 +1,9 @@
+"use client";
 import { deleteChore, setChoreCompleted } from "@/server/actions";
 import { Button } from "@/components/ui/button";
 import { Check, Trash } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
+import { useApartment } from "@/context/ApartmentContext";
 
 import {
     Card,
@@ -14,12 +16,6 @@ import {
 } from "@/components/ui/card"
 import AddChoreDialog from "./AddChoreDialog";
 
-type MemberOption = {
-    userId: string,
-    label: string,
-    initials?: string
-}
-
 type ChoreItem = {
     id: number,
     title: string,
@@ -31,8 +27,6 @@ type ChoreItem = {
 
 type ChoreListProps = {
     chores: ChoreItem[],
-    members: MemberOption[],
-    currentUserId: string | null,
     buttonOn?: boolean,
     title?: String,
     description?: String,
@@ -56,7 +50,8 @@ function getDeadlineLabel(deadline: Date | string | null) {
     return Math.abs(diffDays) + " day(s) ago";
 }
 
-export default function ChoreList({ chores, members, currentUserId, buttonOn = true, title = "Apartment Chores", description = "Recent tasks assigned across roommates" }: ChoreListProps) {
+export default function ChoreList({ chores, buttonOn = true, title = "Apartment Chores", description = "Recent tasks assigned across roommates" }: ChoreListProps) {
+    const { members, currentUserId } = useApartment();
     const memberLabelById = new Map(members.map((m) => [m.userId, m.label]));
 
     return (
@@ -70,7 +65,7 @@ export default function ChoreList({ chores, members, currentUserId, buttonOn = t
             <CardContent>
                 {buttonOn ? (
                     <div className="mb-6 w-full">
-                        <AddChoreDialog members={members} />
+                        <AddChoreDialog />
                     </div>) : null}
                 <div>
             {chores.map((chore) => {

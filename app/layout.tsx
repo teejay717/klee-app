@@ -15,6 +15,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/nextjs/server";
+import { ApartmentProvider } from "@/context/ApartmentContext";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -44,6 +47,30 @@ export default async function RootLayout({
       "No Email",
   } : null;
 
+  const { userId, orgId } = await auth();
+
+    const client = await clerkClient();
+
+  // fetch members
+    const memberships = orgId ? await client.organizations.getOrganizationMembershipList({ 
+    organizationId: orgId,
+    limit: 100,}) : { data: [], totalCount: 0 };
+
+    const members = memberships.data.map((membership) => {
+    const user = membership.publicUserData;
+
+    if (!user?.userId) return null;
+
+    const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
+    const initials = [user.firstName?.charAt(0), user.lastName?.charAt(0)].filter(Boolean).join("").toUpperCase();
+
+    return {
+        userId: user.userId,
+        label: fullName || user.identifier || "Unknown Member",
+        initials: initials
+    }
+}).filter((m): m is { userId: string; label: string; initials: string } => m !== null);
+
   return (
     <html
       lang="en"
@@ -60,14 +87,16 @@ export default async function RootLayout({
                   <SignUpButton />
                 </Show>
                 <Show when="signed-in">
-                  <SidebarProvider>
-                    <AppSidebar identity={sidebarIdentity}/>
-                      <SidebarInset >
-                        <div className="p-4">
-                          {children}
-                        </div>
-                    </SidebarInset>
-                  </SidebarProvider>
+                  <ApartmentProvider members={members} userId={userId}>
+                    <SidebarProvider>
+                      <AppSidebar identity={sidebarIdentity}/>
+                        <SidebarInset >
+                          <div className="p-4">
+                            {children}
+                          </div>
+                      </SidebarInset>
+                    </SidebarProvider>
+                  </ApartmentProvider>
                 </Show>
               </header>
             </ThemeProvider>

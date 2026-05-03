@@ -10,11 +10,7 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import AddExpenseDialog from "./AddExpenseDialog";
-
-type MemberOption = {
-    userId: string,
-    label: string
-}
+import { useApartment } from "@/context/ApartmentContext";
 
 type ExpenseItem = {
     id: number
@@ -28,14 +24,13 @@ type ParticipationItem = {
 }
 
 type ExpensesCardProps = {
-    members: MemberOption[],
     expenses: ExpenseItem[],
     expenseParticipation: ParticipationItem[],
-    currentUserId: string | null
 }
 
 
-export default function SharedExpensesCard({ members, expenses, expenseParticipation = [], currentUserId }: ExpensesCardProps) {
+export default function SharedExpensesCard({ expenses, expenseParticipation = [] }: ExpensesCardProps) {
+    const { members, currentUserId } = useApartment()
     const totalAmount = expenses.reduce((acc, item) => acc + Number(item.amount), 0);
 
     const yourShare = expenses.reduce((acc, expense) => {
@@ -65,7 +60,7 @@ export default function SharedExpensesCard({ members, expenses, expenseParticipa
                 <CardDescription>Past 30 days overview</CardDescription>
             </div>
                 <CardAction className="self-auto">
-                    <AddExpenseDialog members={members} />
+                    <AddExpenseDialog />
                 </CardAction>
             </CardHeader>
             

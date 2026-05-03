@@ -10,28 +10,7 @@ import ExpensesCards from "@/components/ExpenseCards";
 
 
 export default async function Page() {
-    const { userId, orgId } = await auth();
-
-    const client = await clerkClient();
-  // fetch members
-    const memberships = orgId ? await client.organizations.getOrganizationMembershipList({ 
-    organizationId: orgId,
-    limit: 100,}) : { data: [], totalCount: 0 };
-
-    const members = memberships.data.map((membership) => {
-    const user = membership.publicUserData;
-
-    if (!user?.userId) return null;
-
-    const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
-    const initials = [user.firstName?.charAt(0), user.lastName?.charAt(0)].filter(Boolean).join("").toUpperCase();
-
-    return {
-        userId: user.userId,
-        label: fullName || user.identifier || "Unknown Member",
-        initials: initials
-    }
-}).filter((m): m is { userId: string; label: string; initials: string } => m !== null);
+    const { orgId } = await auth();
 
     const apartmentExpenses = orgId 
         ? await db.select().from(expenses).where(eq(expenses.apartmentId, orgId)) 
@@ -45,9 +24,9 @@ export default async function Page() {
 
     return (
         <div>
-            <HeaderComponent title="Expenses" description="Track and split shared costs" children={<AddExpenseDialog members={members} className="bg-blue-900 hover:bg-blue-800 px-8 py-6 text-lg font-semibold min-w-[200px]"/>}/>
+            <HeaderComponent title="Expenses" description="Track and split shared costs" children={<AddExpenseDialog className="bg-blue-900 hover:bg-blue-800 px-8 py-6 text-lg font-semibold min-w-[200px]"/>}/>
             <main className="max-w-7xl mx-auto mt-10 p-6 space-y-10">
-                <FilterableExpenseList allExpenses={apartmentExpenses} expenseParticipation={participations} members={members} currentUserId={userId}/>
+                <FilterableExpenseList allExpenses={apartmentExpenses} expenseParticipation={participations} />
         </main>
         </div>
     )

@@ -9,13 +9,10 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import { useApartment } from "@/context/ApartmentContext";
 
-type RoommatesCardProps = {
-    members?: { userId: string; label: string; initials: string}[];
-    currentUserId: string | null
-}
-
-export default function RoommatesCard({ members, currentUserId }: RoommatesCardProps) {
+export default function RoommatesCard() {
+    const { members, currentUserId } = useApartment()
 
     return (
         <Card className="shadow-md">

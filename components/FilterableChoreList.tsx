@@ -2,14 +2,13 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ChoreList from "./ChoreList";
+import { useApartment } from "@/context/ApartmentContext";
 
 interface FilterableChoreListProps {
     allChores: any[];
-    members: { userId: string; label: string; initials: string }[];
-    currentUserId: string | null;
 }
 
-export default function FilterableChoreList({ allChores, members, currentUserId} : FilterableChoreListProps) {
+export default function FilterableChoreList({ allChores } : FilterableChoreListProps) {
     const [activeTab, setActiveTab] = useState('week')
     
     const tabTitle = activeTab === 'all' 
@@ -46,23 +45,12 @@ export default function FilterableChoreList({ allChores, members, currentUserId}
             <TabsContent value={activeTab}>
                 <ChoreList 
                     chores={filteredChores} 
-                    members={members} 
-                    currentUserId={currentUserId} 
                     buttonOn={false}
                     title={tabTitle}
                     description={`${filteredChores.length} Tasks completed`}
                 />
             </TabsContent>
             </Tabs>
-            {/* <HeaderComponent title="Chore History" description="Track completed tasks and assignments" children={<AddChoreDialog members={members} className="bg-blue-900 hover:bg-blue-800 px-8 py-6 text-lg font-semibold min-w-[200px]"/>}/>
-            <main className="max-w-7xl mx-auto mt-10 p-6 space-y-10">
-            <section>
-                <ChoreList chores={completedChores} members={members} currentUserId={userId} buttonOn={false} title="This Week's Chores"/>
-            </section>
-            <section>
-                <ChoreList chores={activeChores} members={members} currentUserId={userId} buttonOn={false} title="Incomplete Chores"/>
-            </section>
-        </main> */}
         </div>
     )
 }

@@ -8,31 +8,10 @@ import RoommatesCard from "@/components/RoommatesCard";
 import SharedExpensesCard from "@/components/SharedExpensesCard";
 import HeaderComponent from "@/components/HeaderComponent";
 import AddChoreDialog from "@/components/AddChoreDialog";
+import { useApartment } from "@/context/ApartmentContext";
 
 export default async function Page() {
     const { userId, orgId } = await auth();
-
-    const client = await clerkClient();
-
-  // fetch members
-    const memberships = orgId ? await client.organizations.getOrganizationMembershipList({ 
-    organizationId: orgId,
-    limit: 100,}) : { data: [], totalCount: 0 };
-
-    const members = memberships.data.map((membership) => {
-    const user = membership.publicUserData;
-
-    if (!user?.userId) return null;
-
-    const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
-    const initials = [user.firstName?.charAt(0), user.lastName?.charAt(0)].filter(Boolean).join("").toUpperCase();
-
-    return {
-        userId: user.userId,
-        label: fullName || user.identifier || "Unknown Member",
-        initials: initials
-    }
-}).filter((m): m is { userId: string; label: string; initials: string } => m !== null);
 
   // Fetch only chores for THIS apartment
 const apartmentChores = orgId 
@@ -93,14 +72,13 @@ return (
             <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
                     <div className="md:col-span-3">
-                        <SharedExpensesCard expenses={apartmentExpenses} members={members} expenseParticipation={participations} currentUserId={userId}/>
+                        <SharedExpensesCard expenses={apartmentExpenses} expenseParticipation={participations} />
                     </div>
                     <div className="md:col-span-2">
-                        <RoommatesCard members={members} currentUserId={userId}/>
+                        <RoommatesCard />
                     </div>
                 </div>
-                <ChoreList chores={dashboardChores} members={members} currentUserId={userId} buttonOn={true}/>
-                
+                <ChoreList chores={dashboardChores} buttonOn={true}/>
             </div>
         </main>
     </div>

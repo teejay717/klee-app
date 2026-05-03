@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ExpenseList from "./ExpensesList";
 import ExpensesCards from "./ExpenseCards";
+import { useApartment } from "@/context/ApartmentContext";
 
 type ExpenseParticipation = {
     id: number,
@@ -24,12 +25,11 @@ type ExpenseItem = {
 
 interface FilterableExpenseListProps {
     allExpenses: ExpenseItem[];
-    members: { userId: string; label: string; initials: string }[];
     expenseParticipation: ExpenseParticipation[],
-    currentUserId: string | null;
 }
 
-export default function FilterableChoreList({ allExpenses, members, currentUserId, expenseParticipation = []} : FilterableExpenseListProps) {
+export default function FilterableChoreList({ allExpenses, expenseParticipation = []} : FilterableExpenseListProps) {
+    const { members, currentUserId } = useApartment()
     const [activeTab, setActiveTab] = useState('week')
     
     const tabTitle = activeTab === 'all' 
@@ -55,7 +55,7 @@ export default function FilterableChoreList({ allExpenses, members, currentUserI
     return (
         <div>
             <section className="mb-6">
-                <ExpensesCards expenses={allExpenses} filteredExpenses={filteredExpenses} members={members} expenseParticipation={expenseParticipation} currentUserId={currentUserId} activeTab={activeTab}/>
+                <ExpensesCards expenses={allExpenses} filteredExpenses={filteredExpenses} expenseParticipation={expenseParticipation} activeTab={activeTab}/>
             </section>
         <div>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -69,8 +69,6 @@ export default function FilterableChoreList({ allExpenses, members, currentUserI
                 <ExpenseList 
                     expenses={filteredExpenses} 
                     expenseParticipation={expenseParticipation}
-                    members={members} 
-                    currentUserId={currentUserId} 
                     buttonOn={false}
                     title={tabTitle}
                     description="Shared expenses and their payment status"

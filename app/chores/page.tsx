@@ -12,24 +12,6 @@ export default async function Page() {
 
     const client = await clerkClient();
   // fetch members
-    const memberships = orgId ? await client.organizations.getOrganizationMembershipList({ 
-    organizationId: orgId,
-    limit: 100,}) : { data: [], totalCount: 0 };
-
-    const members = memberships.data.map((membership) => {
-    const user = membership.publicUserData;
-
-    if (!user?.userId) return null;
-
-    const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
-    const initials = [user.firstName?.charAt(0), user.lastName?.charAt(0)].filter(Boolean).join("").toUpperCase();
-
-    return {
-        userId: user.userId,
-        label: fullName || user.identifier || "Unknown Member",
-        initials: initials
-    }
-}).filter((m): m is { userId: string; label: string; initials: string } => m !== null);
 
     const apartmentChores = orgId 
         ? await db.select().from(chores).where(eq(chores.apartmentId, orgId)) 
@@ -39,11 +21,11 @@ export default async function Page() {
 
     return (
         <div>
-            <HeaderComponent title="Chore History" description="Track completed tasks and assignments" children={<AddChoreDialog members={members} className="bg-blue-900 hover:bg-blue-800 px-8 py-6 text-lg font-semibold min-w-[200px]"/>}/>
+            <HeaderComponent title="Chore History" description="Track completed tasks and assignments" children={<AddChoreDialog className="bg-blue-900 hover:bg-blue-800 px-8 py-6 text-lg font-semibold min-w-[200px]"/>}/>
             <main className="max-w-7xl mx-auto mt-10 p-6 space-y-10">
-                <FilterableChoreList allChores={apartmentChores} members={members} currentUserId={userId} />
+                <FilterableChoreList allChores={apartmentChores}/>
             <section>
-                <ChoreList chores={activeChores} members={members} currentUserId={userId} buttonOn={false} title="Incomplete Chores" description="Incomplete tasks assigned to roommates"/>
+                <ChoreList chores={activeChores} buttonOn={false} title="Incomplete Chores" description="Incomplete tasks assigned to roommates"/>
             </section>
         </main>
         </div>
