@@ -47,29 +47,7 @@ export default async function RootLayout({
       "No Email",
   } : null;
 
-  const { userId, orgId } = await auth();
-
-    const client = await clerkClient();
-
   // fetch members
-    const memberships = orgId ? await client.organizations.getOrganizationMembershipList({ 
-    organizationId: orgId,
-    limit: 100,}) : { data: [], totalCount: 0 };
-
-    const members = memberships.data.map((membership) => {
-    const user = membership.publicUserData;
-
-    if (!user?.userId) return null;
-
-    const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
-    const initials = [user.firstName?.charAt(0), user.lastName?.charAt(0)].filter(Boolean).join("").toUpperCase();
-
-    return {
-        userId: user.userId,
-        label: fullName || user.identifier || "Unknown Member",
-        initials: initials
-    }
-}).filter((m): m is { userId: string; label: string; initials: string } => m !== null);
 
   return (
     <html
@@ -87,7 +65,7 @@ export default async function RootLayout({
                   <SignUpButton />
                 </Show>
                 <Show when="signed-in">
-                  <ApartmentProvider members={members} userId={userId}>
+                  <ApartmentProvider>
                     <SidebarProvider>
                       <AppSidebar identity={sidebarIdentity}/>
                         <SidebarInset >

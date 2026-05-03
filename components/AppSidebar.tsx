@@ -25,8 +25,6 @@ export function AppSidebar({identity}: AppSidebarProps) {
     <SidebarHeader className="border-b p-4">
         <OrganizationSwitcher 
     hidePersonal={true}
-    afterCreateOrganizationUrl="/" 
-    afterSelectOrganizationUrl="/"
     appearance={{
         elements: {
             organizationSwitcherTrigger: `
