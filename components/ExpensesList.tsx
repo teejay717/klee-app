@@ -91,7 +91,15 @@ export default function ExpenseList({ expenses, expenseParticipation = [], butto
                             return (
                                 
                                 <div className="w-12 h-12 mx-2 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-sm">
-                                    {member.initials || member.label[0]}
+                                    {member.imageUrl ? (
+                                    <img 
+                                        src={member.imageUrl} 
+                                        alt={member.label} 
+                                        className="w-full h-full object-cover rounded-full" 
+                                    />
+                                    ) : (
+                                        member.initials || member.label[0]
+                                    )}
                                 </div>
                             );
                         })()} 

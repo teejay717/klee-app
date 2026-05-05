@@ -5,7 +5,8 @@ import { useAuth, useOrganization } from '@clerk/nextjs';
 type Member = {
     userId: string,
     label: string,
-    initials: string
+    initials: string,
+    imageUrl?: string
 }
 
 interface ApartmentContextType {
@@ -35,7 +36,8 @@ export function ApartmentProvider({ children }: { children: React.ReactNode }) {
         return {
             userId: user.userId,
             label: fullName || user.identifier || "Unknown Member",
-            initials: initials
+            initials: initials,
+            imageUrl: user.imageUrl
         }
     }).filter(Boolean) as Member[] ?? [];
 

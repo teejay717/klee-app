@@ -110,7 +110,15 @@ export default function ChoreList({ chores, buttonOn = true, title = "Apartment 
                     if (!member) return null;
                     return (
                         <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-sm">
-                            {member.initials || member.label[0]}
+                            {member.imageUrl ? (
+                            <img 
+                                src={member.imageUrl} 
+                                alt={member.label} 
+                                className="w-full h-full object-cover rounded-full" 
+                            />
+                            ) : (
+                                member.initials || member.label[0]
+                            )}
                         </div>
                     );
                 })()}

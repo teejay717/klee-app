@@ -26,7 +26,15 @@ export default function RoommatesCard() {
                         members.map((member) => (
                             <div key={member.userId} className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                                    {member.initials || member.label[0]}
+                                    {member.imageUrl ? (
+                                    <img 
+                                        src={member.imageUrl} 
+                                        alt={member.label} 
+                                        className="w-full h-full object-cover rounded-full" 
+                                    />
+                                    ) : (
+                                        member.initials || member.label[0]
+                                    )}
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium">
