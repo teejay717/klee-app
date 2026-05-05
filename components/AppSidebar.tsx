@@ -22,18 +22,19 @@ type AppSidebarProps = {
 export function AppSidebar({identity}: AppSidebarProps) {
     return (
     <Sidebar>
-    <SidebarHeader className="border-b p-4">
+    <SidebarHeader className="border-b p-4 items-center">
         <OrganizationSwitcher 
     hidePersonal={true}
     appearance={{
         elements: {
             organizationSwitcherTrigger: `
-                px-2 py-1 
-                bg-transparent hover:bg-gray-100
-                rounded-md
-                border-none
-                font-medium text-sm
+                !w-54 !h-12 !px-4 !justify-between
+                !bg-white !hover:bg-blue-900
+                text-gray-900 border border-gray-200
+                rounded-md shadow-sm transition-colors
             `,
+            organizationPreviewMainIdentifier: "!font-bold !text-md",
+            organizationSwitcherTriggerIcon: "!w-5 !h-5",
             organizationSwitcherPopoverCard: "shadow-lg border border-gray-200 rounded-lg",
         }
     }}
