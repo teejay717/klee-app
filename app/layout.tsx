@@ -59,24 +59,26 @@ export default async function RootLayout({
         <ClerkProvider>
           <TooltipProvider>
             <ThemeProvider>
-              <header className="flex items-center justify-end gap-3 border-b">
-                <Show when="signed-out">
-                  <SignInButton />
-                  <SignUpButton />
-                </Show>
-                <Show when="signed-in">
-                  <ApartmentProvider>
-                    <SidebarProvider>
-                      <AppSidebar identity={sidebarIdentity}/>
-                        <SidebarInset >
-                          <div className="p-4">
-                            {children}
-                          </div>
-                      </SidebarInset>
-                    </SidebarProvider>
-                  </ApartmentProvider>
-                </Show>
-              </header>
+              
+              {/* Signed Out View - No longer trapped in a flex header */}
+              <Show when="signed-out">
+                {children}
+              </Show>
+
+              {/* Signed In View */}
+              <Show when="signed-in">
+                <ApartmentProvider>
+                  <SidebarProvider>
+                    <AppSidebar identity={sidebarIdentity}/>
+                    <SidebarInset>
+                      <div className="p-4">
+                        {children}
+                      </div>
+                    </SidebarInset>
+                  </SidebarProvider>
+                </ApartmentProvider>
+              </Show>
+
             </ThemeProvider>
           </TooltipProvider>
         </ClerkProvider>
