@@ -67,7 +67,7 @@ export default function ExpensesCards({ filteredExpenses, expenseParticipation =
         return new Intl.NumberFormat('en-PH', {
             style: 'currency',
             currency: 'PHP',
-            maximumFractionDigits: 0,
+            maximumFractionDigits: 2,
         }).format(num);
     };
     

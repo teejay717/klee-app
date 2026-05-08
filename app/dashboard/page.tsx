@@ -118,7 +118,6 @@ const recentActivity = [...recentChores, ...recentExpenses]
         return dateB - dateA;
     })
     .slice(0, 5);
-console.log(recentActivity)
 
 const participations = apartmentExpenses.length > 0 
         ? await db.select()

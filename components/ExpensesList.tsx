@@ -42,10 +42,7 @@ type ExpenseListProps = {
 export default function ExpenseList({ expenses, expenseParticipation = [], buttonOn = true, title = "Expenses", description = "Shared expenses and their payment status" }: ExpenseListProps) {
     const { members, currentUserId } = useApartment()
     const memberLabelById = new Map(members.map((m) => [m.userId, m.label]));
-
-    const totalAmount = expenses.reduce((acc, item) => acc + Number(item.amount), 0);
-    const yourShare = members.length > 0 ? totalAmount / members.length : 0
-
+    
     const formatCurrency = (num: number) => {
         return new Intl.NumberFormat('en-PH', {
             style: 'currency',

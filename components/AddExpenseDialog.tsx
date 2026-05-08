@@ -23,6 +23,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useApartment } from "@/context/ApartmentContext";
+import { useFormStatus } from "react-dom";
 
 export default function AddExpenseDialog({ className = "bg-blue-900 hover:bg-blue-800 w-full" }) {
 const { members } = useApartment()
@@ -48,6 +49,7 @@ useEffect(() => {
 
 async function handleCreateExpense(formData: FormData) {
     setSubmitError(null);
+
     try {
         await createExpense(formData);
         formRef.current?.reset();
@@ -56,6 +58,21 @@ async function handleCreateExpense(formData: FormData) {
     } catch {
         setSubmitError("Could not log expense. Please try again.");
     }
+}
+
+function SubmitButton({ disabled }: { disabled: boolean }) {
+    const { pending } = useFormStatus();
+
+    return (
+        <Button 
+        type="submit" 
+        disabled={disabled || pending} 
+        className="bg-blue-900 hover:bg-blue-800 flex-1" 
+        size="lg"
+        >
+        {pending ? 'Adding...' : "Add Expense"}
+        </Button>
+    );
 }
 
 
@@ -136,14 +153,7 @@ return (
                     Cancel
                 </Button>
             </DialogClose>
-                <Button 
-                    type="submit" 
-                    disabled={!paidByUserId} 
-                    className="bg-blue-900 hover:bg-blue-800 flex-1" 
-                    size="lg"
-                >
-                    Add Expense
-                </Button>
+                <SubmitButton disabled={!paidByUserId} />
         </DialogFooter>
         </form>
     </DialogContent>
