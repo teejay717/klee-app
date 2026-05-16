@@ -22,14 +22,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar"
 import { useApartment } from "@/context/ApartmentContext";
 
 export default function AddChoreDialog({ className = "bg-blue-900 hover:bg-blue-800 w-full" }) {
 const { members } = useApartment()
 const defaultMember = useMemo(() => members[0]?.userId ?? "", [members]);
 const [assigneeUserId, setAssigneeUserId] = useState(defaultMember);
-const [deadline, setDeadline] = useState<Date | undefined>(undefined)
 const [open, setOpen] = useState(false);
 const [submitError, setSubmitError] = useState<string | null>(null);
 const formRef = useRef<HTMLFormElement>(null);

@@ -1,9 +1,10 @@
 "use client";
 import { deleteChore, setChoreCompleted } from "@/server/actions";
 import { Button } from "@/components/ui/button";
-import { Check, Trash } from "lucide-react";
+import { Trash } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
 import { useApartment } from "@/context/ApartmentContext";
+import Image from "next/image";
 
 import {
     Card,
@@ -28,8 +29,8 @@ type ChoreItem = {
 type ChoreListProps = {
     chores: ChoreItem[],
     buttonOn?: boolean,
-    title?: String,
-    description?: String,
+    title?: string,
+    description?: string,
 }
 
 function getDeadlineLabel(deadline: Date | string | null) {
@@ -111,9 +112,11 @@ export default function ChoreList({ chores, buttonOn = true, title = "Apartment 
                     return (
                         <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-sm">
                             {member.imageUrl ? (
-                            <img 
+                            <Image 
                                 src={member.imageUrl} 
                                 alt={member.label} 
+                                width={32}
+                                height={32}
                                 className="w-full h-full object-cover rounded-full" 
                             />
                             ) : (

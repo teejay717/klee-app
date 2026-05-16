@@ -25,11 +25,25 @@ import {
 import { useApartment } from "@/context/ApartmentContext";
 import { useFormStatus } from "react-dom";
 
+function SubmitButton({ disabled }: { disabled: boolean }) {
+    const { pending } = useFormStatus();
+
+    return (
+        <Button 
+        type="submit" 
+        disabled={disabled || pending} 
+        className="bg-blue-900 hover:bg-blue-800 flex-1" 
+        size="lg"
+        >
+        {pending ? 'Adding...' : "Add Expense"}
+        </Button>
+    );
+}
+
 export default function AddExpenseDialog({ className = "bg-blue-900 hover:bg-blue-800 w-full" }) {
 const { members } = useApartment()
 const defaultMember = useMemo(() => members[0]?.userId ?? "", [members]);
 const [paidByUserId, setPaidByUserId] = useState(defaultMember);
-const [date, setDate] = useState<Date | undefined>(undefined)
 const [open, setOpen] = useState(false);
 const [submitError, setSubmitError] = useState<string | null>(null);
 const [category, setCategory] = useState("Rent");
@@ -59,23 +73,6 @@ async function handleCreateExpense(formData: FormData) {
         setSubmitError("Could not log expense. Please try again.");
     }
 }
-
-function SubmitButton({ disabled }: { disabled: boolean }) {
-    const { pending } = useFormStatus();
-
-    return (
-        <Button 
-        type="submit" 
-        disabled={disabled || pending} 
-        className="bg-blue-900 hover:bg-blue-800 flex-1" 
-        size="lg"
-        >
-        {pending ? 'Adding...' : "Add Expense"}
-        </Button>
-    );
-}
-
-
 
 return (
     <Dialog open={open} onOpenChange={setOpen}>

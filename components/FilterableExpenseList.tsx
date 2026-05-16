@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ExpenseList from "./ExpensesList";
 import ExpensesCards from "./ExpenseCards";
-import { useApartment } from "@/context/ApartmentContext";
 
 type ExpenseParticipation = {
     id: number,
@@ -29,7 +28,6 @@ interface FilterableExpenseListProps {
 }
 
 export default function FilterableChoreList({ allExpenses, expenseParticipation = []} : FilterableExpenseListProps) {
-    const { members, currentUserId } = useApartment()
     const [activeTab, setActiveTab] = useState('week')
     
     const tabTitle = activeTab === 'all' 
@@ -69,7 +67,6 @@ export default function FilterableChoreList({ allExpenses, expenseParticipation 
                 <ExpenseList 
                     expenses={filteredExpenses} 
                     expenseParticipation={expenseParticipation}
-                    buttonOn={false}
                     title={tabTitle}
                     description="Shared expenses and their payment status"
                 />

@@ -1,9 +1,7 @@
 "use client";
-import { deleteChore, setChoreCompleted } from "@/server/actions";
-import { Button } from "@/components/ui/button";
-import { Check, Trash, PhilippinePeso, CircleCheckBig } from "lucide-react";
-import { Checkbox } from "./ui/checkbox";
+import { PhilippinePeso, CircleCheckBig } from "lucide-react";
 import { useApartment } from "@/context/ApartmentContext";
+import Image from "next/image";
 
 import {
     Card,
@@ -55,7 +53,7 @@ export default function RecentActivityCard({ activities } : {activities: any[]})
             <CardHeader className="flex items-center gap-3 justify-between">
                 <div className="flex flex-col">
                     <CardTitle className="text-xl font-bold">Recent Activity</CardTitle>
-                    <CardDescription>What's happening in your apartment</CardDescription>
+                    <CardDescription>What&apos;s happening in your apartment</CardDescription>
                 </div>
             </CardHeader>
             <CardContent>
@@ -69,9 +67,11 @@ export default function RecentActivityCard({ activities } : {activities: any[]})
                     return (
                         <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-sm">
                             {member.imageUrl ? (
-                            <img 
+                            <Image 
                                 src={member.imageUrl} 
                                 alt={member.label} 
+                                width={32}
+                                height={32}
                                 className="w-full h-full object-cover rounded-full" 
                             />
                             ) : (

@@ -10,6 +10,7 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { useApartment } from "@/context/ApartmentContext";
+import Image from "next/image";
 
 export default function RoommatesCard() {
     const { members, currentUserId } = useApartment()
@@ -27,10 +28,12 @@ export default function RoommatesCard() {
                             <div key={member.userId} className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
                                     {member.imageUrl ? (
-                                    <img 
-                                        src={member.imageUrl} 
-                                        alt={member.label} 
-                                        className="w-full h-full object-cover rounded-full" 
+                                    <Image
+                                        src={member.imageUrl}
+                                        alt={member.label}
+                                        width={32}
+                                        height={32}
+                                        className="w-full h-full object-cover rounded-full"
                                     />
                                     ) : (
                                         member.initials || member.label[0]

@@ -12,6 +12,7 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { useApartment } from "@/context/ApartmentContext";
+import Image from "next/image";
 
 type ExpenseItem = {
     id: number,
@@ -35,11 +36,11 @@ type ExpenseListProps = {
     expenses: ExpenseItem[],
     expenseParticipation: ExpenseParticipation[],
     buttonOn?: boolean,
-    title?: String,
-    description?: String,
+    title?: string,
+    description?: string,
 }
 
-export default function ExpenseList({ expenses, expenseParticipation = [], buttonOn = true, title = "Expenses", description = "Shared expenses and their payment status" }: ExpenseListProps) {
+export default function ExpenseList({ expenses, expenseParticipation = [], title = "Expenses", description = "Shared expenses and their payment status" }: ExpenseListProps) {
     const { members, currentUserId } = useApartment()
     const memberLabelById = new Map(members.map((m) => [m.userId, m.label]));
     
@@ -89,9 +90,11 @@ export default function ExpenseList({ expenses, expenseParticipation = [], butto
                                 
                                 <div className="w-12 h-12 mx-2 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-sm">
                                     {member.imageUrl ? (
-                                    <img 
+                                    <Image 
                                         src={member.imageUrl} 
                                         alt={member.label} 
+                                        width={48} 
+                                        height={48}
                                         className="w-full h-full object-cover rounded-full" 
                                     />
                                     ) : (

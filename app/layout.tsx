@@ -2,12 +2,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import {
   ClerkProvider,
   Show,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-  OrganizationSwitcher,
 } from "@clerk/nextjs";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar";
 
 import "./globals.css";
@@ -15,8 +11,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { currentUser } from "@clerk/nextjs/server";
-import { auth } from "@clerk/nextjs/server";
-import { clerkClient } from "@clerk/nextjs/server";
 import { ApartmentProvider } from "@/context/ApartmentContext";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });

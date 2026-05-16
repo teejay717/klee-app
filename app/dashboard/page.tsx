@@ -7,9 +7,6 @@ import ChoreList from "@/components/ChoreList";
 import RoommatesCard from "@/components/RoommatesCard";
 import SharedExpensesCard from "@/components/SharedExpensesCard";
 import HeaderComponent from "@/components/HeaderComponent";
-import AddChoreDialog from "@/components/AddChoreDialog";
-import { useApartment } from "@/context/ApartmentContext";
-import { useOrganization } from '@clerk/nextjs';
 import RecentActivityCard from "@/components/RecentActivityCard";
 
 export default async function Page() {
