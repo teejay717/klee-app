@@ -19,8 +19,13 @@ export default function RecentActivityCard({ activities } : {activities: any[]})
 
     function getDateLabel(date: Date | string | null) {
     if (!date) return "No date";
+
+    let safeDate = date;
+    if (typeof safeDate === "string" && !safeDate.endsWith("Z")) {
+        safeDate += "Z";
+    }
     
-    const d = date instanceof Date ? date : new Date(date);
+    const d = safeDate instanceof Date ? safeDate : new Date(safeDate);
     if (Number.isNaN(d.getTime())) return "No date"
     
     const now = new Date();
