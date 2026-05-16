@@ -10,7 +10,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { ApartmentProvider } from "@/context/ApartmentContext";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
@@ -31,6 +31,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
 
+  const { orgId } = await auth();
   const user = await currentUser();
 
   const sidebarIdentity: SidebarIdentity = user ? {
@@ -61,17 +62,25 @@ export default async function RootLayout({
 
               {/* Signed In View */}
               <Show when="signed-in">
-                <ApartmentProvider>
-                  <SidebarProvider>
-                    <AppSidebar identity={sidebarIdentity}/>
-                    <SidebarInset>
-                      <div className="p-4">
-                        {children}
-                      </div>
-                    </SidebarInset>
-                  </SidebarProvider>
-                </ApartmentProvider>
-              </Show>
+          {/* If they are signed in but haven't selected an apartment, just show the page (SelectApartment) */}
+          {!orgId ? (
+            <main className="min-h-screen">
+               {children}
+            </main>
+          ) : (
+            /* Standard Dashboard View with Sidebar */
+            <ApartmentProvider>
+              <SidebarProvider>
+                <AppSidebar identity={sidebarIdentity}/>
+                <SidebarInset>
+                  <div className="p-4">
+                    {children}
+                  </div>
+                </SidebarInset>
+              </SidebarProvider>
+            </ApartmentProvider>
+          )}
+        </Show>
 
             </ThemeProvider>
           </TooltipProvider>
