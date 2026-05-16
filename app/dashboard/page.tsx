@@ -78,7 +78,7 @@ const recentChores = apartmentChores
         title: chore.title,
         userName: "Member",
         userId: chore.userId,
-        time: chore.completedAt!.toISOString()
+        time: `${chore.completedAt}`.endsWith('Z') ? chore.completedAt : `${chore.completedAt}Z`
     }))
     .sort((a,b) => {
         if (!a.time) return 1;
@@ -92,7 +92,7 @@ const recentExpenses = apartmentExpenses
         type: "expense" as const,
         title: e.description,
         userName: "Member",
-        time: e.date.toISOString(),
+        time: `${e.date}`.endsWith('Z') ? e.date : `${e.date}Z`,
         userId: e.paidByUserId,
         category: e.category,
         amount: e.amount
@@ -110,8 +110,8 @@ const recentActivity = [...recentChores, ...recentExpenses]
             : (memberMap.get((item.userId)) || "Unknown")
     }))
     .sort((a,b) => {
-        const dateA = new Date(a.time).getTime();
-        const dateB = new Date(b.time).getTime();
+        const dateA = new Date(a.time as string).getTime();
+        const dateB = new Date(b.time as string).getTime();
         return dateB - dateA;
     })
     .slice(0, 5);

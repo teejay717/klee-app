@@ -99,7 +99,7 @@ export default function RecentActivityCard({ activities } : {activities: any[]})
             
             <div className="flex items-center gap-2">
                 <span className="text-slate-400">
-                {a.type === "chore" ? <PhilippinePeso /> : <CircleCheckBig />}
+                {a.type === "chore" ? <CircleCheckBig /> : <PhilippinePeso />}
                 </span>
             </div>
             </div>
