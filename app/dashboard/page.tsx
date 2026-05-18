@@ -39,6 +39,7 @@ const apartmentExpenses = orgId
         category: expenses.category,
         paidByUserId: expenses.paidByUserId,
         date: expenses.date,
+        createdAt: expenses.createdAt,
         // This is the key: get the status ONLY for the current user
         isPaid: expenseParticipation.isPaid})
         .from(expenses)
@@ -92,10 +93,10 @@ const recentExpenses = apartmentExpenses
         type: "expense" as const,
         title: e.description,
         userName: "Member",
-        time: `${e.date}`.endsWith('Z') ? e.date : `${e.date}Z`,
+        time: `${e.createdAt}`.endsWith('Z') ? e.createdAt : `${e.createdAt}Z`,
         userId: e.paidByUserId,
         category: e.category,
-        amount: e.amount
+        amount: e.amount,
     })).sort((a,b) => {
         if (!a.time) return 1;
         if (!b.time) return -1;
