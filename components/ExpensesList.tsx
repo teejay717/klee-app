@@ -67,6 +67,10 @@ export default function ExpenseList({ expenses, expenseParticipation = [], title
                 const chipText = expense.paidByUserId === currentUserId ? "You" : assignee.split(' ')[0];
                 const category = expense.category
 
+                const participants = expenseParticipation.filter(p => p.expenseId === expense.id);
+                const isUserParticipating = participants.some(p => p.userId === currentUserId);
+                const shareAmount = isUserParticipating ? Number(expense.amount) / Number(participants.length) : 0;
+
                 // const dateLabel = chore.isCompleted && chore.completedAt ? 
                 //     `Completed on ${new Date(chore.completedAt).toLocaleDateString('en-US', { 
                 //         month: 'long', 
@@ -137,15 +141,19 @@ export default function ExpenseList({ expenses, expenseParticipation = [], title
                                     <form key={p.id} action={toggleExpensePaid}>
                                         <input type="hidden" name="expenseId" value={p.expenseId}/>
                                         <input type="hidden" name="nextPaidStatus" value={String(!p.isPaid)}/>
-                                        <button key={p.id}>
+                                        <button key={p.id} disabled={p.userId !== currentUserId}>
                                         <Badge
-                                            className={`cursor-pointer p-3 ${
-                                            p.isPaid
-                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                            }`}
-                                        >
-                                            {displayName}: {p.isPaid ? 'Paid' : 'Pending'}
+                                        className={`p-3 transition-opacity ${
+                                            p.userId === currentUserId 
+                                                ? 'cursor-pointer hover:opacity-80' 
+                                                : 'cursor-default opacity-60'
+                                                } ${
+                                                    p.isPaid
+                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                }`}
+                                            >
+                                                {displayName}: {p.isPaid ? 'Paid' : 'Pending'}
                                         </Badge>
                                     </button>
                                     </form>
@@ -153,8 +161,11 @@ export default function ExpenseList({ expenses, expenseParticipation = [], title
                             })}
                     </div>
                     <p className="text-xl font-bold text-foreground">{formatCurrency(Number(expense.amount))}</p>
-                    <p className="text-md text-muted-foreground">Your share: {members.length > 0 ? formatCurrency(Number(expense.amount) / members.length) : formatCurrency(0)}</p>
-                </div>
+                    <p className="text-md text-muted-foreground">Your share: 
+                        {expenseParticipation.filter(p => p.expenseId === expense.id).length > 0 
+                        ? formatCurrency(shareAmount) 
+                        : formatCurrency(0)}</p>
+                </div>  
 
                 <form action={deleteExpense}>
                     <input type="hidden" name="expenseId" value={String(expense.id)} />

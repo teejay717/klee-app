@@ -10,13 +10,9 @@ import { clerkClient } from "@clerk/nextjs/server"
 // zod Schemas
 // z.object defines the expected shape of incoming form fields.
 
-// CHORE Schemas
+// CHORE
 
 const createChoreSchema = z.object({
-  // z.string: value must be text.
-  // trim: removes surrounding spaces before checks.
-  // min(1): blocks empty titles after trimming.
-  // max(120): keeps title length bounded.
   title: z
     .string()
     .trim()
@@ -35,8 +31,6 @@ const createChoreSchema = z.object({
 
 const deleteChoreSchema = z.object({
   // FormData gives strings, so coerce.number converts "5" -> 5.
-  // int: must be whole number.
-  // positive: must be > 0.
   choreId: z.coerce.number().int().positive("Invalid chore id"),
 })
 
@@ -63,6 +57,12 @@ const createExpenseSchema = z.object({
     .optional()
     .transform((v) => (v ? new Date(v) : new Date()))
     .refine((d) => !isNaN(d.getTime()), "Invalid date"),
+  participants: z
+    .preprocess(
+      (val) => (val ? (Array.isArray(val) ? val : [val]) : []),
+      z.array(z.string().min(1))
+    )
+    .optional(),
 })
 
 const toggleExpensePaidSchema = z.object({
@@ -77,7 +77,13 @@ const deleteExpenseSchema = z.object({
 // Generic helper that validates FormData with any schema.
 function parseFormData<T>(schema: z.ZodType<T>, formData: FormData): T {
   // Converts FormData into a plain object so Zod can validate keys/values.
-  const raw = Object.fromEntries(formData.entries())
+
+  // const raw = Object.fromEntries(formData.entries())
+  const raw: any = {}
+  for (const key of formData.keys()) {
+    const values = formData.getAll(key)
+    raw[key] = values.length > 1 ? values : values[0]
+  }
 
   // safeParse returns success/data or success/error without throwing.
   const parsed = schema.safeParse(raw)
@@ -186,9 +192,11 @@ export async function createExpense(formData: FormData) {
   if (!orgId) throw new Error("You must be in an Apartment to add expenses!")
   if (!userId) throw new Error("You must be signed in to perform this action")
 
-  const { description, amount, category, paidByUserId, date } = parseFormData(
-    createExpenseSchema,
-    formData
+  const { description, amount, category, paidByUserId, date, participants } =
+    parseFormData(createExpenseSchema, formData)
+
+  const uniqueParticipants = Array.from(
+    new Set([paidByUserId, ...(participants || [])])
   )
 
   const [insertedExpense] = await db
@@ -208,12 +216,12 @@ export async function createExpense(formData: FormData) {
     organizationId: orgId,
   })
 
-  if (memberships.data.length > 0) {
+  if (uniqueParticipants?.length! > 0) {
     await db.insert(expenseParticipation).values(
-      memberships.data.map((m) => ({
+      uniqueParticipants?.map((p) => ({
         expenseId: insertedExpense.id,
-        userId: m.publicUserData?.userId!,
-        isPaid: m.publicUserData?.userId === paidByUserId,
+        userId: p,
+        isPaid: p === paidByUserId,
       }))
     )
   }

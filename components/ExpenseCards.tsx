@@ -48,7 +48,7 @@ export default function ExpensesCards({ filteredExpenses, expenseParticipation =
         const myParticipation = expenseParticipation.find(p => p.expenseId === expense.id && p.userId === currentUserId);
         
         const amountToAdd = (myParticipation && !myParticipation.isPaid) 
-            ? (Number(expense.amount) / members.length) 
+            ? (Number(expense.amount) / expenseParticipation.filter(p => p.expenseId === expense.id).length) 
             : 0;
 
         return acc + amountToAdd

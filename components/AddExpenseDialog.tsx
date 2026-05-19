@@ -22,8 +22,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field"
 import { useApartment } from "@/context/ApartmentContext";
 import { useFormStatus } from "react-dom";
+import { Card } from "./ui/card";
 
 function SubmitButton({ disabled }: { disabled: boolean }) {
     const { pending } = useFormStatus();
@@ -142,6 +152,34 @@ return (
                 ))}
             </SelectContent>
             </Select>
+        </div>
+        <div className="space-y-2">
+            <FieldSet>
+                <FieldLegend variant="label">
+                    Split Among
+                </FieldLegend>
+                <Card>
+                <FieldGroup className="gap-3">
+                    {members.map((m) => (
+                        <Field key={m.userId} orientation="horizontal">
+                            <Checkbox
+                                id={`${m.userId}-checkbox`}
+                                name="participants"
+                                value={m.userId}
+                                className=" data-[state=checked]:bg-blue-900 border-2 border-blue-900 rounded-sm"
+                                defaultChecked
+                            />
+                            <FieldLabel
+                                htmlFor={`${m.userId}-checkbox`}
+                                className="font-normal"
+                            >
+                            {m.label.split(' ')[0]}
+                            </FieldLabel>
+                        </Field>                        
+                    ))}
+                </FieldGroup>
+                </Card>
+                </FieldSet>
         </div>
                 {submitError ? <p className="text-sm text-red-500">{submitError}</p> : null}
         <DialogFooter className="flex sm:justify-between gap-3 pt-4">

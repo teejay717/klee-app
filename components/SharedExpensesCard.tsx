@@ -37,8 +37,8 @@ export default function SharedExpensesCard({ expenses, expenseParticipation = []
 
         const myParticipation = expenseParticipation.find(p => p.expenseId === expense.id && p.userId === currentUserId);
         
-        const amountToAdd = (myParticipation && !myParticipation.isPaid) 
-            ? (Number(expense.amount) / members.length) 
+         const amountToAdd = (myParticipation && !myParticipation.isPaid) 
+            ? (Number(expense.amount) / expenseParticipation.filter(p => p.expenseId === expense.id).length) 
             : 0;
 
         return acc + amountToAdd
@@ -48,7 +48,7 @@ export default function SharedExpensesCard({ expenses, expenseParticipation = []
         return new Intl.NumberFormat('en-PH', {
             style: 'currency',
             currency: 'PHP',
-            maximumFractionDigits: 0,
+            maximumFractionDigits: 2,
         }).format(num);
     };
     
