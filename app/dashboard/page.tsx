@@ -61,6 +61,18 @@ const activeChores = apartmentChores
         return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
 });
 
+const recentPaymentsData = orgId 
+    ? await db.select({
+        id: expenseParticipation.id,
+        userId: expenseParticipation.userId,
+        paidAt: expenseParticipation.paidAt,
+        expenseDescription: expenses.description,
+    })
+    .from(expenseParticipation)
+    .innerJoin(expenses, eq(expenses.id, expenseParticipation.expenseId))
+    .where(and(eq(expenses.apartmentId, orgId), eq(expenseParticipation.isPaid, true), gte(expenseParticipation.paidAt, thirtyDaysAgo)))
+    : [];
+
 const completedChores = apartmentChores.filter(chore => chore.isCompleted).sort((a, b) => {
         // if there is no completion date move to the bottom
         if (!a.completedAt) return 1;
@@ -103,7 +115,18 @@ const recentExpenses = apartmentExpenses
         return new Date(b.time).getTime() - new Date(a.time).getTime();
     })
 
-const recentActivity = [...recentChores, ...recentExpenses]
+const recentPayments = recentPaymentsData.filter(p => p.paidAt).map(p => ({
+    id: `payment-${p.id}`,
+    type: "payment" as const,
+    title: p.expenseDescription,
+    userName: "Member",
+    time: `${p.paidAt}`.endsWith('Z') ? p.paidAt : `${p.paidAt}Z`,
+    userId: p.userId,
+    category: "Payment",
+    amount: "0",
+}));
+
+const recentActivity = [...recentChores, ...recentExpenses, ...recentPayments]
     .map(item => ({
         ...item, 
         userName: item.type === "chore" 

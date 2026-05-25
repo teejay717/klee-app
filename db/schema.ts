@@ -54,6 +54,7 @@ export const expenseParticipation = pgTable(
       .references(() => expenses.id, { onDelete: "cascade" }),
     userId: text("user_id").notNull(),
     isPaid: boolean("is_paid").notNull().default(false),
+    paidAt: timestamp("paid_at"),
   },
   (table) => [
     index("expense_participation_expense_id_idx").on(table.expenseId), // Optimization for filtering by expense

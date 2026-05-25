@@ -222,6 +222,7 @@ export async function createExpense(formData: FormData) {
         expenseId: insertedExpense.id,
         userId: p,
         isPaid: p === paidByUserId,
+        paidAt: p === paidByUserId ? new Date() : null,
       }))
     )
   }
@@ -233,12 +234,12 @@ export async function createExpense(formData: FormData) {
 export async function deleteExpense(formData: FormData) {
   const { userId, orgId } = await auth()
 
-  if (!orgId) throw new Error("You must be in an Apartment to delete chores!")
+  if (!orgId) throw new Error("You must be in an Apartment to delete expenses!")
   if (!userId) throw new Error("You must be signed in to perform this action")
 
   const { expenseId } = parseFormData(deleteExpenseSchema, formData)
 
-  if (!expenseId) throw new Error("Invalid chore id")
+  if (!expenseId) throw new Error("Invalid expense id")
 
   const [deletedRows] = await db
     .delete(expenses)
@@ -266,7 +267,10 @@ export async function toggleExpensePaid(formData: FormData) {
 
   const [updatedRow] = await db
     .update(expenseParticipation)
-    .set({ isPaid: nextPaidStatus })
+    .set({
+      isPaid: nextPaidStatus,
+      paidAt: nextPaidStatus ? new Date() : null,
+    })
     .where(
       and(
         eq(expenseParticipation.expenseId, expenseId),

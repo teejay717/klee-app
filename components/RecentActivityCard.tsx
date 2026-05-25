@@ -88,7 +88,19 @@ export default function RecentActivityCard({ activities } : {activities: any[]})
                 <div className="min-w-0">
                     <div className="flex gap-2 items-center justify-start">
                         <p className="truncate font-medium">
-                            {a.type === "chore" ? `Completed: ${a.title}` : `Added Expense: ${a.title} - ${formatCurrency(a.amount)}`} 
+                            {a.type === "chore" ? (
+                                <>
+                                    Completed: <span className="inline-block rounded-md bg-slate-200/80 px-2 py-1 text-blue-900  ">{a.title}</span>
+                                </>
+                            ) : a.type === "expense" ? (
+                                <>
+                                    Added Expense: <span className="inline-block rounded-md bg-slate-200/80 px-2 py-1 text-blue-900 ">{a.title} - {formatCurrency(a.amount)}</span>
+                                </>
+                            ) : (
+                                <>
+                                    Paid their share of: <span className="inline-block rounded-md bg-slate-200/80 px-2 py-1 text-blue-900 font-medium">{a.title}</span>
+                                </>
+                            )}
                         </p>
                     </div>
                     <p className="mt-1 text-xs text-slate-600">
@@ -99,7 +111,7 @@ export default function RecentActivityCard({ activities } : {activities: any[]})
             
             <div className="flex items-center gap-2">
                 <span className="text-slate-400">
-                {a.type === "chore" ? <CircleCheckBig /> : <PhilippinePeso />}
+                {a.type === "chore" ? <CircleCheckBig /> : a.type === "expense" ? <PhilippinePeso /> : <CircleCheckBig />}
                 </span>
             </div>
             </div>
