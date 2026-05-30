@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { ApartmentProvider } from "@/context/ApartmentContext";
+import { Toaster } from "@/components/ui/sonner";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -85,6 +86,7 @@ export default async function RootLayout({
             </ThemeProvider>
           </TooltipProvider>
         </ClerkProvider>
+        <Toaster position="bottom-right" />
       </body>
     </html>
   );

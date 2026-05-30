@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useRef } from "react";
 import { createChore } from "@/server/actions";
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +24,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useApartment } from "@/context/ApartmentContext";
+import { useFormStatus } from "react-dom";
 
 export default function AddChoreDialog({ className = "bg-blue-900 hover:bg-blue-800 w-full" }) {
 const { members } = useApartment()
@@ -32,16 +34,54 @@ const [open, setOpen] = useState(false);
 const [submitError, setSubmitError] = useState<string | null>(null);
 const formRef = useRef<HTMLFormElement>(null);
 
+function SubmitButton({ disabled }: { disabled: boolean }) {
+    const { pending } = useFormStatus();
+
+    return (
+        <Button 
+        type="submit" 
+        disabled={disabled || pending} 
+        className="bg-blue-900 hover:bg-blue-800 flex-1" 
+        size="lg"
+        >
+        {pending ? 'Adding...' : "Add Expense"}
+        </Button>
+    );
+}
+
+// async function handleCreateChore(formData: FormData) {
+//     setSubmitError(null);
+//     try {
+//         await createChore(formData);
+//         formRef.current?.reset();
+//         setAssigneeUserId(defaultMember);
+//         setOpen(false);
+//         toast.success("Chore created successfully!");
+//     } catch {
+//         setSubmitError("Could not create chore. Please try again.");
+//         toast.error("Failed to create chore.");
+//     }
+// }
+
 async function handleCreateChore(formData: FormData) {
     setSubmitError(null);
-    try {
-        await createChore(formData);
-        formRef.current?.reset();
-        setAssigneeUserId(defaultMember);
-        setOpen(false);
-    } catch {
-        setSubmitError("Could not create chore. Please try again.");
-    }
+    toast.promise(createChore(formData), {
+        loading: 'Adding chore...',
+        success: () => {
+            formRef.current?.reset();
+            setAssigneeUserId(defaultMember);
+            setOpen(false);
+            return 'Chore added successfully!';
+        },
+        error: (err) => {
+            setSubmitError("Could not create chore. Please try again.");
+            return 'Failed to add chore.';
+        },
+        classNames: {
+            success: 'bg-green-500 text-white border-green-600',
+            error: 'bg-red-500 text-white border-red-600',
+        }
+    });
 }
 
 return (
@@ -100,14 +140,7 @@ return (
                     Cancel
                 </Button>
             </DialogClose>
-                <Button 
-                    type="submit" 
-                    disabled={!assigneeUserId} 
-                    className="bg-blue-900 hover:bg-blue-800 flex-1" 
-                    size="lg"
-                >
-                    Add Chore
-                </Button>
+                <SubmitButton disabled={!assigneeUserId} />
         </DialogFooter>
         </form>
 

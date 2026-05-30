@@ -34,6 +34,7 @@ import {
 import { useApartment } from "@/context/ApartmentContext";
 import { useFormStatus } from "react-dom";
 import { Card } from "./ui/card";
+import { toast } from "sonner"
 
 function SubmitButton({ disabled }: { disabled: boolean }) {
     const { pending } = useFormStatus();
@@ -71,17 +72,38 @@ useEffect(() => {
         }
     }, [submitError]);
 
+// async function handleCreateExpense(formData: FormData) {
+//     setSubmitError(null);
+
+//     try {
+//         await createExpense(formData);
+//         formRef.current?.reset();
+//         setPaidByUserId(defaultMember);
+//         setOpen(false);
+//     } catch {
+//         setSubmitError("Could not log expense. Please try again.");
+//     }
+// }
+
 async function handleCreateExpense(formData: FormData) {
     setSubmitError(null);
-
-    try {
-        await createExpense(formData);
-        formRef.current?.reset();
-        setPaidByUserId(defaultMember);
-        setOpen(false);
-    } catch {
-        setSubmitError("Could not log expense. Please try again.");
-    }
+    toast.promise(createExpense(formData), {
+        loading: 'Adding expense...',
+        success: () => {
+            formRef.current?.reset();
+            setPaidByUserId(defaultMember);
+            setOpen(false);
+            return 'Expense added successfully!';
+        },
+        error: (err) => {
+            setSubmitError("Could not log expense. Please try again.");
+            return 'Failed to add expense.';
+        },
+        classNames: {
+            success: 'bg-green-500 text-white border-green-600',
+            error: 'bg-red-500 text-white border-red-600',
+        }
+    });
 }
 
 return (

@@ -16,6 +16,7 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import AddChoreDialog from "./AddChoreDialog";
+import { toast } from "sonner";
 
 type ChoreItem = {
     id: number,
@@ -128,7 +129,8 @@ export default function ChoreList({ chores, buttonOn = true, title = "Apartment 
 
                 <form action={deleteChore}>
                     <input type="hidden" name="choreId" value={String(chore.id)} />
-                    <Button type="submit" variant="ghost" size="icon" className="group hover:cursor-pointer text-slate-400 hover:text-red-500 transition-colors">
+                    <Button type="submit" variant="ghost" size="icon" className="group hover:cursor-pointer text-slate-400 hover:text-red-500 transition-colors"
+                        onClick={() => toast.success("Chore deleted")}>
                         <Trash className="w-4 h-4" />
                     </Button>
                 </form>
