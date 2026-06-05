@@ -102,236 +102,288 @@ function parseFormData<T>(schema: z.ZodType<T>, formData: FormData): T {
 // CHORES
 
 export async function createChore(formData: FormData) {
-  const { userId, orgId } = await auth()
+  try {
+    const { userId, orgId } = await auth()
 
-  if (!orgId) return { error: "You must be in an Apartment to add chores!" }
-  if (!userId) return { error: "You must be signed in to perform this action" }
+    if (!orgId) return { error: "You must be in an Apartment to add chores!" }
+    if (!userId)
+      return { error: "You must be signed in to perform this action" }
 
-  const { success } = await rateLimit.limit(userId)
+    const { success } = await rateLimit.limit(userId)
 
-  if (!success) {
-    return { error: "You're doing that too quickly, please wait a moment!" }
+    if (!success) {
+      return { error: "You're doing that too quickly, please wait a moment!" }
+    }
+
+    const { title, assigneeUserId, deadline } = parseFormData(
+      createChoreSchema,
+      formData
+    )
+
+    const client = await clerkClient()
+    const membership = await client.organizations.getOrganizationMembershipList(
+      {
+        organizationId: orgId,
+        userId: [assigneeUserId],
+        limit: 1,
+      }
+    )
+
+    if (membership.data.length === 0) {
+      return { error: "Selected member is not part of this apartment" }
+    }
+    await db.insert(chores).values({
+      title,
+      apartmentId: orgId,
+      userId: assigneeUserId,
+      createdByUserId: userId,
+      isCompleted: false,
+      deadline,
+    })
+
+    revalidatePath("/dashboard")
+    revalidatePath("/")
+
+    return { success: true }
+  } catch (err) {
+    return {
+      error:
+        err instanceof Error ? err.message : "An unexpected error occurred",
+    }
   }
-
-  const { title, assigneeUserId, deadline } = parseFormData(
-    createChoreSchema,
-    formData
-  )
-
-  const client = await clerkClient()
-  const membership = await client.organizations.getOrganizationMembershipList({
-    organizationId: orgId,
-    userId: [assigneeUserId],
-    limit: 1,
-  })
-
-  if (membership.data.length === 0) {
-    return { error: "Selected member is not part of this apartment" }
-  }
-  await db.insert(chores).values({
-    title,
-    apartmentId: orgId,
-    userId: assigneeUserId,
-    createdByUserId: userId,
-    isCompleted: false,
-    deadline,
-  })
-
-  revalidatePath("/dashboard")
-  revalidatePath("/")
-
-  return { success: true }
 }
 
 export async function deleteChore(formData: FormData) {
-  const { userId, orgId } = await auth()
+  try {
+    const { userId, orgId } = await auth()
 
-  if (!orgId) return { error: "You must be in an Apartment to delete chores!" }
-  if (!userId) return { error: "You must be signed in to perform this action" }
+    if (!orgId)
+      return { error: "You must be in an Apartment to delete chores!" }
+    if (!userId)
+      return { error: "You must be signed in to perform this action" }
 
-  const { success } = await rateLimit.limit(userId)
+    const { success } = await rateLimit.limit(userId)
 
-  if (!success) {
-    return { error: "You're doing that too quickly, please wait a moment!" }
+    if (!success) {
+      return { error: "You're doing that too quickly, please wait a moment!" }
+    }
+
+    const { choreId } = parseFormData(deleteChoreSchema, formData)
+
+    if (!choreId) return { error: "Invalid chore id" }
+
+    const [deletedRows] = await db
+      .delete(chores)
+      .where(and(eq(chores.id, choreId), eq(chores.apartmentId, orgId)))
+      .returning({ id: chores.id })
+
+    if (!deletedRows)
+      return { error: "Chore not found or you do not have permission" }
+
+    revalidatePath("/dashboard")
+    revalidatePath("/")
+
+    return { success: true }
+  } catch (err) {
+    return {
+      error:
+        err instanceof Error ? err.message : "An unexpected error occurred",
+    }
   }
-
-  const { choreId } = parseFormData(deleteChoreSchema, formData)
-
-  if (!choreId) return { error: "Invalid chore id" }
-
-  const [deletedRows] = await db
-    .delete(chores)
-    .where(and(eq(chores.id, choreId), eq(chores.apartmentId, orgId)))
-    .returning({ id: chores.id })
-
-  if (!deletedRows)
-    return { error: "Chore not found or you do not have permission" }
-
-  revalidatePath("/dashboard")
-  revalidatePath("/")
-
-  return { success: true }
 }
 
 export async function setChoreCompleted(formData: FormData) {
-  const { userId, orgId } = await auth()
+  try {
+    const { userId, orgId } = await auth()
 
-  if (!orgId)
-    return { error: "You must be in an Apartment to complete chores!" }
-  if (!userId) return { error: "You must be signed in to perform this action" }
+    if (!orgId)
+      return { error: "You must be in an Apartment to complete chores!" }
+    if (!userId)
+      return { error: "You must be signed in to perform this action" }
 
-  const { success } = await rateLimit.limit(userId)
+    const { success } = await rateLimit.limit(userId)
 
-  if (!success) {
-    return { error: "You're doing that too quickly, please wait a moment!" }
+    if (!success) {
+      return { error: "You're doing that too quickly, please wait a moment!" }
+    }
+
+    const { choreId, nextCompleted } = parseFormData(
+      setChoreCompletedStatus,
+      formData
+    )
+
+    const [updatedRow] = await db
+      .update(chores)
+      .set({
+        isCompleted: nextCompleted,
+        completedAt: nextCompleted ? new Date() : null,
+      })
+      .where(and(eq(chores.id, choreId), eq(chores.apartmentId, orgId)))
+      .returning({ id: chores.id })
+
+    if (!updatedRow)
+      return { error: "Chore not found or you do not have permission!" }
+
+    revalidatePath("/dashboard")
+    revalidatePath("/chores")
+    revalidatePath("/")
+
+    return { success: true }
+  } catch (err) {
+    return {
+      error:
+        err instanceof Error ? err.message : "An unexpected error occurred",
+    }
   }
-
-  const { choreId, nextCompleted } = parseFormData(
-    setChoreCompletedStatus,
-    formData
-  )
-
-  const [updatedRow] = await db
-    .update(chores)
-    .set({
-      isCompleted: nextCompleted,
-      completedAt: nextCompleted ? new Date() : null,
-    })
-    .where(and(eq(chores.id, choreId), eq(chores.apartmentId, orgId)))
-    .returning({ id: chores.id })
-
-  if (!updatedRow)
-    return { error: "Chore not found or you do not have permission!" }
-
-  revalidatePath("/dashboard")
-  revalidatePath("/chores")
-  revalidatePath("/")
-
-  return { success: true }
 }
 
 // EXPENSES
 
 export async function createExpense(formData: FormData) {
-  const { userId, orgId } = await auth()
+  try {
+    const { userId, orgId } = await auth()
 
-  if (!orgId) return { error: "You must be in an Apartment to add expenses!" }
-  if (!userId) return { error: "You must be signed in to perform this action" }
+    if (!orgId) return { error: "You must be in an Apartment to add expenses!" }
+    if (!userId)
+      return { error: "You must be signed in to perform this action" }
 
-  const { success } = await rateLimit.limit(userId)
+    const { success } = await rateLimit.limit(userId)
 
-  if (!success) {
-    return { error: "You're doing that too quickly, please wait a moment!" }
-  }
+    if (!success) {
+      return { error: "You're doing that too quickly, please wait a moment!" }
+    }
 
-  const { description, amount, category, paidByUserId, date, participants } =
-    parseFormData(createExpenseSchema, formData)
+    const { description, amount, category, paidByUserId, date, participants } =
+      parseFormData(createExpenseSchema, formData)
 
-  const uniqueParticipants = Array.from(
-    new Set([paidByUserId, ...(participants || [])])
-  )
-
-  const [insertedExpense] = await db
-    .insert(expenses)
-    .values({
-      description,
-      amount: amount.toString(),
-      category,
-      apartmentId: orgId,
-      paidByUserId,
-      date,
-    })
-    .returning({ id: expenses.id })
-
-  const client = await clerkClient()
-  const memberships = await client.organizations.getOrganizationMembershipList({
-    organizationId: orgId,
-  })
-
-  if (uniqueParticipants?.length! > 0) {
-    await db.insert(expenseParticipation).values(
-      uniqueParticipants?.map((p) => ({
-        expenseId: insertedExpense.id,
-        userId: p,
-        isPaid: p === paidByUserId,
-        paidAt: p === paidByUserId ? new Date() : null,
-      }))
+    const uniqueParticipants = Array.from(
+      new Set([paidByUserId, ...(participants || [])])
     )
+
+    const [insertedExpense] = await db
+      .insert(expenses)
+      .values({
+        description,
+        amount: amount.toString(),
+        category,
+        apartmentId: orgId,
+        paidByUserId,
+        date,
+      })
+      .returning({ id: expenses.id })
+
+    const client = await clerkClient()
+    const memberships =
+      await client.organizations.getOrganizationMembershipList({
+        organizationId: orgId,
+      })
+
+    if (uniqueParticipants?.length! > 0) {
+      await db.insert(expenseParticipation).values(
+        uniqueParticipants?.map((p) => ({
+          expenseId: insertedExpense.id,
+          userId: p,
+          isPaid: p === paidByUserId,
+          paidAt: p === paidByUserId ? new Date() : null,
+        }))
+      )
+    }
+
+    revalidatePath("/dashboard")
+    revalidatePath("/")
+
+    return { success: true }
+  } catch (err) {
+    return {
+      error:
+        err instanceof Error ? err.message : "An unexpected error occurred",
+    }
   }
-
-  revalidatePath("/dashboard")
-  revalidatePath("/")
-
-  return { success: true }
 }
 
 export async function deleteExpense(formData: FormData) {
-  const { userId, orgId } = await auth()
+  try {
+    const { userId, orgId } = await auth()
 
-  if (!orgId)
-    return { error: "You must be in an Apartment to delete expenses!" }
-  if (!userId) return { error: "You must be signed in to perform this action" }
+    if (!orgId)
+      return { error: "You must be in an Apartment to delete expenses!" }
+    if (!userId)
+      return { error: "You must be signed in to perform this action" }
 
-  const { success } = await rateLimit.limit(userId)
+    const { success } = await rateLimit.limit(userId)
 
-  if (!success) {
-    return { error: "You're doing that too quickly, please wait a moment!" }
+    if (!success) {
+      return { error: "You're doing that too quickly, please wait a moment!" }
+    }
+
+    const { expenseId } = parseFormData(deleteExpenseSchema, formData)
+
+    if (!expenseId) return { error: "Invalid expense id" }
+
+    const [deletedRows] = await db
+      .delete(expenses)
+      .where(and(eq(expenses.id, expenseId), eq(expenses.apartmentId, orgId)))
+      .returning({ id: expenses.id })
+
+    if (!deletedRows)
+      return { error: "Expense not found or you do not have permission" }
+
+    revalidatePath("/dashboard")
+    revalidatePath("/")
+
+    return { success: true }
+  } catch (err) {
+    return {
+      error:
+        err instanceof Error ? err.message : "An unexpected error occurred",
+    }
   }
-
-  const { expenseId } = parseFormData(deleteExpenseSchema, formData)
-
-  if (!expenseId) return { error: "Invalid expense id" }
-
-  const [deletedRows] = await db
-    .delete(expenses)
-    .where(and(eq(expenses.id, expenseId), eq(expenses.apartmentId, orgId)))
-    .returning({ id: expenses.id })
-
-  if (!deletedRows)
-    return { error: "Expense not found or you do not have permission" }
-
-  revalidatePath("/dashboard")
-  revalidatePath("/")
-
-  return { success: true }
 }
 
 export async function toggleExpensePaid(formData: FormData) {
-  const { userId, orgId } = await auth()
+  try {
+    const { userId, orgId } = await auth()
 
-  if (!orgId)
-    return { error: "You must be in an Apartment to toggle payment status!" }
-  if (!userId) return { error: "You must be signed in to perform this action" }
+    if (!orgId)
+      return { error: "You must be in an Apartment to toggle payment status!" }
+    if (!userId)
+      return { error: "You must be signed in to perform this action" }
 
-  const { success } = await rateLimit.limit(userId)
+    const { success } = await rateLimit.limit(userId)
 
-  if (!success) {
-    return { error: "You're doing that too quickly, please wait a moment!" }
-  }
+    if (!success) {
+      return { error: "You're doing that too quickly, please wait a moment!" }
+    }
 
-  const { expenseId, nextPaidStatus } = parseFormData(
-    toggleExpensePaidSchema,
-    formData
-  )
-
-  const [updatedRow] = await db
-    .update(expenseParticipation)
-    .set({
-      isPaid: nextPaidStatus,
-      paidAt: nextPaidStatus ? new Date() : null,
-    })
-    .where(
-      and(
-        eq(expenseParticipation.expenseId, expenseId),
-        eq(expenseParticipation.userId, userId)
-      )
+    const { expenseId, nextPaidStatus } = parseFormData(
+      toggleExpensePaidSchema,
+      formData
     )
-    .returning({ id: expenseParticipation.id })
 
-  if (!updatedRow) return { error: "Participation record not found" }
+    const [updatedRow] = await db
+      .update(expenseParticipation)
+      .set({
+        isPaid: nextPaidStatus,
+        paidAt: nextPaidStatus ? new Date() : null,
+      })
+      .where(
+        and(
+          eq(expenseParticipation.expenseId, expenseId),
+          eq(expenseParticipation.userId, userId)
+        )
+      )
+      .returning({ id: expenseParticipation.id })
 
-  revalidatePath("/dashboard")
-  revalidatePath("/")
+    if (!updatedRow) return { error: "Participation record not found" }
 
-  return { success: true }
+    revalidatePath("/dashboard")
+    revalidatePath("/")
+
+    return { success: true }
+  } catch (err) {
+    return {
+      error:
+        err instanceof Error ? err.message : "An unexpected error occurred",
+    }
+  }
 }
