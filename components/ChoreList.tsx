@@ -52,6 +52,22 @@ function getDeadlineLabel(deadline: Date | string | null) {
     return Math.abs(diffDays) + " day(s) ago";
 }
 
+async function handleToggleChore(formData: FormData) {
+    toast.promise(setChoreCompleted(formData), {
+        loading: "Updating chore status...",
+        success: "Chore status updated!",
+        error: (err) => err instanceof Error ? err.message : "Failed to update chore status",
+    });
+}
+
+async function handleDelete(formData: FormData) {
+    toast.promise(deleteChore(formData), { // or deleteExpense
+        loading: "Deleting Chore...",
+        success: "Chore Deleted successfully!",
+        error: (err) => err instanceof Error ? err.message : "Failed to Delete Chore",
+    });
+}
+
 export default function ChoreList({ chores, buttonOn = true, title = "Apartment Chores", description = "Recent tasks assigned across roommates" }: ChoreListProps) {
     const { members, currentUserId } = useApartment();
     const memberLabelById = new Map(members.map((m) => [m.userId, m.label]));
@@ -84,7 +100,7 @@ export default function ChoreList({ chores, buttonOn = true, title = "Apartment 
                 return (
             <div key={chore.id} className={`p-3 border rounded-md flex items-center justify-between gap-3 my-2 ${chore.isCompleted ? "bg-slate-100/50" : ""} hover:bg-slate-100/50`}>
             <div className="flex items-center gap-3 min-w-0">
-                <form action={setChoreCompleted}>
+                <form action={handleToggleChore}>
                 <input type="hidden" name="choreId" value={String(chore.id)} />
                 <input type="hidden" name="nextCompleted" value={String(!chore.isCompleted)} />
                     <Checkbox type="submit" className="hover:cursor-pointer" checked={chore.isCompleted}/>
@@ -127,10 +143,9 @@ export default function ChoreList({ chores, buttonOn = true, title = "Apartment 
                     );
                 })()}
 
-                <form action={deleteChore}>
+                <form action={handleDelete}>
                     <input type="hidden" name="choreId" value={String(chore.id)} />
-                    <Button type="submit" variant="ghost" size="icon" className="group hover:cursor-pointer text-slate-400 hover:text-red-500 transition-colors"
-                        onClick={() => toast.success("Chore deleted")}>
+                    <Button type="submit" variant="ghost" size="icon" className="group hover:cursor-pointer text-slate-400 hover:text-red-500 transition-colors">
                         <Trash className="w-4 h-4" />
                     </Button>
                 </form>

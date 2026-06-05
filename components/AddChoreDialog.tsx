@@ -44,7 +44,7 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
         className="bg-blue-900 hover:bg-blue-800 flex-1" 
         size="lg"
         >
-        {pending ? 'Adding...' : "Add Expense"}
+        {pending ? 'Adding...' : "Add Chore"}
         </Button>
     );
 }
@@ -74,8 +74,13 @@ async function handleCreateChore(formData: FormData) {
             return 'Chore added successfully!';
         },
         error: (err) => {
-            setSubmitError("Could not create chore. Please try again.");
-            return 'Failed to add chore.';
+            const errorMessage = err instanceof Error ? err.message : "Failed to add chore.";
+            
+            setTimeout(() => {
+                setSubmitError(errorMessage);
+            }, 3000);
+            
+            return errorMessage; 
         },
         classNames: {
             success: 'bg-green-500 text-white border-green-600',

@@ -41,6 +41,22 @@ type ExpenseListProps = {
     description?: string,
 }
 
+async function handleTogglePaid(formData: FormData) {
+    toast.promise(toggleExpensePaid(formData), {
+        loading: "Updating status...",
+        success: "Status updated!",
+        error: (err) => err instanceof Error ? err.message : "Failed to update status",
+    });
+}
+
+async function handleDelete(formData: FormData) {
+    toast.promise(deleteExpense(formData), { // or deleteExpense
+        loading: "Deleting Expense...",
+        success: "Expense Deleted successfully!",
+        error: (err) => err instanceof Error ? err.message : "Failed to Delete Expense",
+    });
+}
+
 export default function ExpenseList({ expenses, expenseParticipation = [], title = "Expenses", description = "Shared expenses and their payment status" }: ExpenseListProps) {
     const { members, currentUserId } = useApartment()
     const memberLabelById = new Map(members.map((m) => [m.userId, m.label]));
@@ -139,7 +155,7 @@ export default function ExpenseList({ expenses, expenseParticipation = [], title
                                 const displayName = p.userId === currentUserId ? "You" : firstName;
 
                                 return (
-                                    <form key={p.id} action={toggleExpensePaid}>
+                                    <form key={p.id} action={handleTogglePaid}>
                                         <input type="hidden" name="expenseId" value={p.expenseId}/>
                                         <input type="hidden" name="nextPaidStatus" value={String(!p.isPaid)}/>
                                         <button key={p.id} disabled={p.userId !== currentUserId}>
@@ -168,10 +184,9 @@ export default function ExpenseList({ expenses, expenseParticipation = [], title
                         : formatCurrency(0)}</p>
                 </div>  
 
-                <form action={deleteExpense}>
+                <form action={handleDelete}>
                     <input type="hidden" name="expenseId" value={String(expense.id)} />
-                    <Button type="submit" variant="ghost" size="icon" className="group hover:cursor-pointer text-slate-400 hover:text-red-500 transition-colors"
-                        onClick={() => toast.success("Expense deleted")}>
+                    <Button type="submit" variant="ghost" size="icon" className="group hover:cursor-pointer text-slate-400 hover:text-red-500 transition-colors">
                         <Trash className="w-4 h-4" />
                     </Button>
                 </form>

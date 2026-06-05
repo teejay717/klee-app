@@ -35,6 +35,7 @@ import { useApartment } from "@/context/ApartmentContext";
 import { useFormStatus } from "react-dom";
 import { Card } from "./ui/card";
 import { toast } from "sonner"
+import { rateLimit } from "@/lib/ratelimiter";
 
 function SubmitButton({ disabled }: { disabled: boolean }) {
     const { pending } = useFormStatus();
@@ -96,8 +97,13 @@ async function handleCreateExpense(formData: FormData) {
             return 'Expense added successfully!';
         },
         error: (err) => {
-            setSubmitError("Could not log expense. Please try again.");
-            return 'Failed to add expense.';
+            const errorMessage = err instanceof Error ? err.message : "Failed to add expense.";
+            
+            setTimeout(() => {
+                setSubmitError(errorMessage);
+            }, 3000);
+            
+            return errorMessage; 
         },
         classNames: {
             success: 'bg-green-500 text-white border-green-600',

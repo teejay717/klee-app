@@ -6,7 +6,8 @@ import { revalidatePath } from "next/cache"
 import { eq, and } from "drizzle-orm"
 import { z } from "zod"
 import { clerkClient } from "@clerk/nextjs/server"
-// I put these comments for study purposes lol
+import { rateLimit } from "@/lib/ratelimiter"
+
 // zod Schemas
 // z.object defines the expected shape of incoming form fields.
 
@@ -106,6 +107,12 @@ export async function createChore(formData: FormData) {
   if (!orgId) throw new Error("You must be in an Apartment to add chores!")
   if (!userId) throw new Error("You must be signed in to perform this action")
 
+  const { success } = await rateLimit.limit(userId)
+
+  if (!success) {
+    throw new Error("Rate limit exceeded, please wait a moment!")
+  }
+
   const { title, assigneeUserId, deadline } = parseFormData(
     createChoreSchema,
     formData
@@ -140,6 +147,12 @@ export async function deleteChore(formData: FormData) {
   if (!orgId) throw new Error("You must be in an Apartment to delete chores!")
   if (!userId) throw new Error("You must be signed in to perform this action")
 
+  const { success } = await rateLimit.limit(userId)
+
+  if (!success) {
+    throw new Error("Rate limit exceeded, please wait a moment!")
+  }
+
   const { choreId } = parseFormData(deleteChoreSchema, formData)
 
   if (!choreId) throw new Error("Invalid chore id")
@@ -161,6 +174,12 @@ export async function setChoreCompleted(formData: FormData) {
 
   if (!orgId) throw new Error("You must be in an Apartment to complete chores!")
   if (!userId) throw new Error("You must be signed in to perform this action")
+
+  const { success } = await rateLimit.limit(userId)
+
+  if (!success) {
+    throw new Error("Rate limit exceeded, please wait a moment!")
+  }
 
   const { choreId, nextCompleted } = parseFormData(
     setChoreCompletedStatus,
@@ -191,6 +210,12 @@ export async function createExpense(formData: FormData) {
 
   if (!orgId) throw new Error("You must be in an Apartment to add expenses!")
   if (!userId) throw new Error("You must be signed in to perform this action")
+
+  const { success } = await rateLimit.limit(userId)
+
+  if (!success) {
+    throw new Error("Rate limit exceeded, please wait a moment!")
+  }
 
   const { description, amount, category, paidByUserId, date, participants } =
     parseFormData(createExpenseSchema, formData)
@@ -237,6 +262,12 @@ export async function deleteExpense(formData: FormData) {
   if (!orgId) throw new Error("You must be in an Apartment to delete expenses!")
   if (!userId) throw new Error("You must be signed in to perform this action")
 
+  const { success } = await rateLimit.limit(userId)
+
+  if (!success) {
+    throw new Error("Rate limit exceeded, please wait a moment!")
+  }
+
   const { expenseId } = parseFormData(deleteExpenseSchema, formData)
 
   if (!expenseId) throw new Error("Invalid expense id")
@@ -259,6 +290,12 @@ export async function toggleExpensePaid(formData: FormData) {
   if (!orgId)
     throw new Error("You must be in an Apartment to toggle payment status!")
   if (!userId) throw new Error("You must be signed in to perform this action")
+
+  const { success } = await rateLimit.limit(userId)
+
+  if (!success) {
+    throw new Error("Rate limit exceeded, please wait a moment!")
+  }
 
   const { expenseId, nextPaidStatus } = parseFormData(
     toggleExpensePaidSchema,
