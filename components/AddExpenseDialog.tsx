@@ -35,7 +35,7 @@ import { useApartment } from "@/context/ApartmentContext";
 import { useFormStatus } from "react-dom";
 import { Card } from "./ui/card";
 import { toast } from "sonner"
-import { rateLimit } from "@/lib/ratelimiter";
+import { action } from "@/lib/utils";
 
 function SubmitButton({ disabled }: { disabled: boolean }) {
     const { pending } = useFormStatus();
@@ -88,7 +88,7 @@ useEffect(() => {
 
 async function handleCreateExpense(formData: FormData) {
     setSubmitError(null);
-    toast.promise(createExpense(formData), {
+    toast.promise(action(createExpense(formData)), {
         loading: 'Adding expense...',
         success: () => {
             formRef.current?.reset();

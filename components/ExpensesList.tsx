@@ -14,6 +14,7 @@ import {
 import { useApartment } from "@/context/ApartmentContext";
 import Image from "next/image";
 import { toast } from "sonner"
+import { action } from "@/lib/utils";
 
 type ExpenseItem = {
     id: number,
@@ -42,7 +43,7 @@ type ExpenseListProps = {
 }
 
 async function handleTogglePaid(formData: FormData) {
-    toast.promise(toggleExpensePaid(formData), {
+    toast.promise(action(toggleExpensePaid(formData)), {
         loading: "Updating status...",
         success: "Status updated!",
         error: (err) => err instanceof Error ? err.message : "Failed to update status",
@@ -50,7 +51,7 @@ async function handleTogglePaid(formData: FormData) {
 }
 
 async function handleDelete(formData: FormData) {
-    toast.promise(deleteExpense(formData), { // or deleteExpense
+    toast.promise(action(deleteExpense(formData)), { // or deleteExpense
         loading: "Deleting Expense...",
         success: "Expense Deleted successfully!",
         error: (err) => err instanceof Error ? err.message : "Failed to Delete Expense",

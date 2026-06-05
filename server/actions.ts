@@ -104,13 +104,13 @@ function parseFormData<T>(schema: z.ZodType<T>, formData: FormData): T {
 export async function createChore(formData: FormData) {
   const { userId, orgId } = await auth()
 
-  if (!orgId) throw new Error("You must be in an Apartment to add chores!")
-  if (!userId) throw new Error("You must be signed in to perform this action")
+  if (!orgId) return { error: "You must be in an Apartment to add chores!" }
+  if (!userId) return { error: "You must be signed in to perform this action" }
 
   const { success } = await rateLimit.limit(userId)
 
   if (!success) {
-    throw new Error("Rate limit exceeded, please wait a moment!")
+    return { error: "You're doing that too quickly, please wait a moment!" }
   }
 
   const { title, assigneeUserId, deadline } = parseFormData(
@@ -126,7 +126,7 @@ export async function createChore(formData: FormData) {
   })
 
   if (membership.data.length === 0) {
-    throw new Error("Selected member is not part of this apartment")
+    return { error: "Selected member is not part of this apartment" }
   }
   await db.insert(chores).values({
     title,
@@ -139,23 +139,25 @@ export async function createChore(formData: FormData) {
 
   revalidatePath("/dashboard")
   revalidatePath("/")
+
+  return { success: true }
 }
 
 export async function deleteChore(formData: FormData) {
   const { userId, orgId } = await auth()
 
-  if (!orgId) throw new Error("You must be in an Apartment to delete chores!")
-  if (!userId) throw new Error("You must be signed in to perform this action")
+  if (!orgId) return { error: "You must be in an Apartment to delete chores!" }
+  if (!userId) return { error: "You must be signed in to perform this action" }
 
   const { success } = await rateLimit.limit(userId)
 
   if (!success) {
-    throw new Error("Rate limit exceeded, please wait a moment!")
+    return { error: "You're doing that too quickly, please wait a moment!" }
   }
 
   const { choreId } = parseFormData(deleteChoreSchema, formData)
 
-  if (!choreId) throw new Error("Invalid chore id")
+  if (!choreId) return { error: "Invalid chore id" }
 
   const [deletedRows] = await db
     .delete(chores)
@@ -163,22 +165,25 @@ export async function deleteChore(formData: FormData) {
     .returning({ id: chores.id })
 
   if (!deletedRows)
-    throw new Error("Chore not found or you do not have permission")
+    return { error: "Chore not found or you do not have permission" }
 
   revalidatePath("/dashboard")
   revalidatePath("/")
+
+  return { success: true }
 }
 
 export async function setChoreCompleted(formData: FormData) {
   const { userId, orgId } = await auth()
 
-  if (!orgId) throw new Error("You must be in an Apartment to complete chores!")
-  if (!userId) throw new Error("You must be signed in to perform this action")
+  if (!orgId)
+    return { error: "You must be in an Apartment to complete chores!" }
+  if (!userId) return { error: "You must be signed in to perform this action" }
 
   const { success } = await rateLimit.limit(userId)
 
   if (!success) {
-    throw new Error("Rate limit exceeded, please wait a moment!")
+    return { error: "You're doing that too quickly, please wait a moment!" }
   }
 
   const { choreId, nextCompleted } = parseFormData(
@@ -196,11 +201,13 @@ export async function setChoreCompleted(formData: FormData) {
     .returning({ id: chores.id })
 
   if (!updatedRow)
-    throw new Error("Chore not found or you do not have permission!")
+    return { error: "Chore not found or you do not have permission!" }
 
   revalidatePath("/dashboard")
   revalidatePath("/chores")
   revalidatePath("/")
+
+  return { success: true }
 }
 
 // EXPENSES
@@ -208,13 +215,13 @@ export async function setChoreCompleted(formData: FormData) {
 export async function createExpense(formData: FormData) {
   const { userId, orgId } = await auth()
 
-  if (!orgId) throw new Error("You must be in an Apartment to add expenses!")
-  if (!userId) throw new Error("You must be signed in to perform this action")
+  if (!orgId) return { error: "You must be in an Apartment to add expenses!" }
+  if (!userId) return { error: "You must be signed in to perform this action" }
 
   const { success } = await rateLimit.limit(userId)
 
   if (!success) {
-    throw new Error("Rate limit exceeded, please wait a moment!")
+    return { error: "You're doing that too quickly, please wait a moment!" }
   }
 
   const { description, amount, category, paidByUserId, date, participants } =
@@ -254,23 +261,26 @@ export async function createExpense(formData: FormData) {
 
   revalidatePath("/dashboard")
   revalidatePath("/")
+
+  return { success: true }
 }
 
 export async function deleteExpense(formData: FormData) {
   const { userId, orgId } = await auth()
 
-  if (!orgId) throw new Error("You must be in an Apartment to delete expenses!")
-  if (!userId) throw new Error("You must be signed in to perform this action")
+  if (!orgId)
+    return { error: "You must be in an Apartment to delete expenses!" }
+  if (!userId) return { error: "You must be signed in to perform this action" }
 
   const { success } = await rateLimit.limit(userId)
 
   if (!success) {
-    throw new Error("Rate limit exceeded, please wait a moment!")
+    return { error: "You're doing that too quickly, please wait a moment!" }
   }
 
   const { expenseId } = parseFormData(deleteExpenseSchema, formData)
 
-  if (!expenseId) throw new Error("Invalid expense id")
+  if (!expenseId) return { error: "Invalid expense id" }
 
   const [deletedRows] = await db
     .delete(expenses)
@@ -278,23 +288,25 @@ export async function deleteExpense(formData: FormData) {
     .returning({ id: expenses.id })
 
   if (!deletedRows)
-    throw new Error("Expense not found or you do not have permission")
+    return { error: "Expense not found or you do not have permission" }
 
   revalidatePath("/dashboard")
   revalidatePath("/")
+
+  return { success: true }
 }
 
 export async function toggleExpensePaid(formData: FormData) {
   const { userId, orgId } = await auth()
 
   if (!orgId)
-    throw new Error("You must be in an Apartment to toggle payment status!")
-  if (!userId) throw new Error("You must be signed in to perform this action")
+    return { error: "You must be in an Apartment to toggle payment status!" }
+  if (!userId) return { error: "You must be signed in to perform this action" }
 
   const { success } = await rateLimit.limit(userId)
 
   if (!success) {
-    throw new Error("Rate limit exceeded, please wait a moment!")
+    return { error: "You're doing that too quickly, please wait a moment!" }
   }
 
   const { expenseId, nextPaidStatus } = parseFormData(
@@ -316,8 +328,10 @@ export async function toggleExpensePaid(formData: FormData) {
     )
     .returning({ id: expenseParticipation.id })
 
-  if (!updatedRow) throw new Error("Participation record not found")
+  if (!updatedRow) return { error: "Participation record not found" }
 
   revalidatePath("/dashboard")
   revalidatePath("/")
+
+  return { success: true }
 }

@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { useApartment } from "@/context/ApartmentContext";
 import { useFormStatus } from "react-dom";
+import { action } from "@/lib/utils";
 
 export default function AddChoreDialog({ className = "bg-blue-900 hover:bg-blue-800 w-full" }) {
 const { members } = useApartment()
@@ -65,7 +66,7 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
 
 async function handleCreateChore(formData: FormData) {
     setSubmitError(null);
-    toast.promise(createChore(formData), {
+    toast.promise(action(createChore(formData)), {
         loading: 'Adding chore...',
         success: () => {
             formRef.current?.reset();

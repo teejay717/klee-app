@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card"
 import AddChoreDialog from "./AddChoreDialog";
 import { toast } from "sonner";
+import { action } from "@/lib/utils";
 
 type ChoreItem = {
     id: number,
@@ -53,7 +54,7 @@ function getDeadlineLabel(deadline: Date | string | null) {
 }
 
 async function handleToggleChore(formData: FormData) {
-    toast.promise(setChoreCompleted(formData), {
+    toast.promise(action(setChoreCompleted(formData)), {
         loading: "Updating chore status...",
         success: "Chore status updated!",
         error: (err) => err instanceof Error ? err.message : "Failed to update chore status",
@@ -61,7 +62,7 @@ async function handleToggleChore(formData: FormData) {
 }
 
 async function handleDelete(formData: FormData) {
-    toast.promise(deleteChore(formData), { // or deleteExpense
+    toast.promise(action(deleteChore(formData)), { // or deleteExpense
         loading: "Deleting Chore...",
         success: "Chore Deleted successfully!",
         error: (err) => err instanceof Error ? err.message : "Failed to Delete Chore",
