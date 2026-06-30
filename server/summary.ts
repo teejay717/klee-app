@@ -32,8 +32,11 @@ export async function getApartmentSummaryData(apartmentId: string) {
     return acc
   }, {} as MemberNameMap)
 
-  const getName = (userId: string | null | undefined) =>
-    userId ? (memberNameMap[userId] ?? "Unknown Member") : "Unknown Member"
+  const getName = (userId: string | null | undefined) => {
+    return userId
+      ? (memberNameMap[userId] ?? "Unknown Member")
+      : "Unknown Member"
+  }
 
   const activeChores = await db
     .select()
