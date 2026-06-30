@@ -9,6 +9,7 @@ import SharedExpensesCard from "@/components/SharedExpensesCard"
 import HeaderComponent from "@/components/HeaderComponent"
 import RecentActivityCard from "@/components/RecentActivityCard"
 import DashboardHeader from "@/components/DashboardHeader"
+import TestAI from "@/components/TestAI"
 
 export default async function Page() {
   const { userId, orgId } = await auth()
@@ -219,6 +220,7 @@ export default async function Page() {
           </div>
           <ChoreList chores={dashboardChores} buttonOn={true} />
           <RecentActivityCard activities={recentActivity} />
+          {/* <TestAI apartmentId={orgId as string} /> */}
         </div>
       </main>
     </div>
