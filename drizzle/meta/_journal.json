@@ -50,6 +50,20 @@
       "when": 1778918055584,
       "tag": "0006_rare_cannonball",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1782914006707,
+      "tag": "0007_square_quasar",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1782917260836,
+      "tag": "0008_tricky_pixie",
+      "breakpoints": true
     }
   ]
 }

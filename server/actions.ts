@@ -3,10 +3,12 @@ import { db } from "@/db"
 import { chores, expenses, expenseParticipation } from "@/db/schema"
 import { auth } from "@clerk/nextjs/server"
 import { revalidatePath } from "next/cache"
-import { eq, and } from "drizzle-orm"
+import { eq, and, inArray, isNull } from "drizzle-orm"
 import { z } from "zod"
 import { clerkClient } from "@clerk/nextjs/server"
 import { rateLimit } from "@/lib/ratelimiter"
+import { generateText } from "ai"
+import { google } from "@ai-sdk/google"
 
 // zod Schemas
 // z.object defines the expected shape of incoming form fields.
@@ -67,12 +69,12 @@ const createExpenseSchema = z.object({
 })
 
 const toggleExpensePaidSchema = z.object({
-  expenseId: z.coerce.number().int().positive("Invalid chore id"),
+  expenseId: z.coerce.number().int().positive("Invalid expense id"),
   nextPaidStatus: z.enum(["true", "false"]).transform((v) => v === "true"),
 })
 
 const deleteExpenseSchema = z.object({
-  expenseId: z.coerce.number().int().positive("Invalid chore id"),
+  expenseId: z.coerce.number().int().positive("Invalid expense id"),
 })
 
 // Generic helper that validates FormData with any schema.
@@ -172,12 +174,13 @@ export async function deleteChore(formData: FormData) {
 
     if (!choreId) return { error: "Invalid chore id" }
 
-    const [deletedRows] = await db
-      .delete(chores)
+    const [updatedChore] = await db
+      .update(chores)
+      .set({ deletedAt: new Date() })
       .where(and(eq(chores.id, choreId), eq(chores.apartmentId, orgId)))
       .returning({ id: chores.id })
 
-    if (!deletedRows)
+    if (!updatedChore)
       return { error: "Chore not found or you do not have permission" }
 
     revalidatePath("/dashboard")
@@ -260,6 +263,24 @@ export async function createExpense(formData: FormData) {
       new Set([paidByUserId, ...(participants || [])])
     )
 
+    const { text: oneLinerSummary } = await generateText({
+      model: google("gemini-2.5-flash"),
+      system: `You are a strict database optimization utility. 
+           Your single task is to convert messy expense descriptions or titles into a short, warm, and highly objective 1-sentence summary.
+
+           CRITICAL RULES:
+           1. Start directly with a lowercase noun or action (do NOT use words like "This expense is", "Our", "A summary of", or "A run to").
+           2. Do not use corporate fluff, marketing speak, or poetic phrases (e.g., do NOT say "keeps everyone connected").
+           3. Focus purely on what was purchased, the category, or the time frame.
+           4. Maximum length: 10 words.
+           
+           Examples:
+           - Input: "Wifi Plan" -> Output: "the monthly internet bill"
+           - Input: "Eggs, milk, trash bags, dish soap" -> Output: "groceries and shared cleaning supplies"
+           - Input: "Electricity May 2026" -> Output: "the electric utility bill for May"`,
+      prompt: `Summarize this description: ${description}`,
+    })
+
     const [insertedExpense] = await db
       .insert(expenses)
       .values({
@@ -269,6 +290,7 @@ export async function createExpense(formData: FormData) {
         apartmentId: orgId,
         paidByUserId,
         date,
+        aiSummary: oneLinerSummary,
       })
       .returning({ id: expenses.id })
 
@@ -320,12 +342,13 @@ export async function deleteExpense(formData: FormData) {
 
     if (!expenseId) return { error: "Invalid expense id" }
 
-    const [deletedRows] = await db
-      .delete(expenses)
+    const [updatedExpense] = await db
+      .update(expenses)
+      .set({ deletedAt: new Date() })
       .where(and(eq(expenses.id, expenseId), eq(expenses.apartmentId, orgId)))
       .returning({ id: expenses.id })
 
-    if (!deletedRows)
+    if (!updatedExpense)
       return { error: "Expense not found or you do not have permission" }
 
     revalidatePath("/dashboard")
@@ -369,7 +392,16 @@ export async function toggleExpensePaid(formData: FormData) {
       .where(
         and(
           eq(expenseParticipation.expenseId, expenseId),
-          eq(expenseParticipation.userId, userId)
+          eq(expenseParticipation.userId, userId),
+          inArray(
+            expenseParticipation.expenseId,
+            db
+              .select({ id: expenses.id })
+              .from(expenses)
+              .where(
+                and(eq(expenses.id, expenseId), isNull(expenses.deletedAt))
+              )
+          )
         )
       )
       .returning({ id: expenseParticipation.id })

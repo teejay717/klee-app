@@ -1,0 +1,1 @@
+ALTER TABLE "expenses" ADD COLUMN "ai_summary" text;

@@ -21,6 +21,7 @@ export const chores = pgTable(
     isCompleted: boolean("is_completed").notNull().default(false),
     completedAt: timestamp("completed_at"),
     createdAt: timestamp("created_at").defaultNow(),
+    deletedAt: timestamp("deleted_at"),
   },
   (table) => [
     index("chores_apartment_id_idx").on(table.apartmentId), // Optimization for filtering by apartment
@@ -39,6 +40,8 @@ export const expenses = pgTable(
     paidByUserId: text("paid_by_user_id").notNull(),
     date: timestamp("date").notNull().defaultNow(),
     createdAt: timestamp("created_at").defaultNow(),
+    deletedAt: timestamp("deleted_at"),
+    aiSummary: text("ai_summary"),
   },
   (table) => [
     index("expenses_apartment_id_idx").on(table.apartmentId), // Optimization for filtering by apartment

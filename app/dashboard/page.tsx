@@ -1,6 +1,6 @@
 import { db } from "@/db"
 import { chores, expenseParticipation, expenses } from "@/db/schema"
-import { eq, and, inArray, gte, sql } from "drizzle-orm"
+import { eq, and, inArray, gte, sql, isNull } from "drizzle-orm"
 import { auth } from "@clerk/nextjs/server"
 import { clerkClient } from "@clerk/nextjs/server"
 import ChoreList from "@/components/ChoreList"
@@ -33,7 +33,10 @@ export default async function Page() {
 
   // Fetch only chores for THIS apartment
   const apartmentChores = orgId
-    ? await db.select().from(chores).where(eq(chores.apartmentId, orgId))
+    ? await db
+        .select()
+        .from(chores)
+        .where(and(eq(chores.apartmentId, orgId), isNull(chores.deletedAt)))
     : []
 
   const thirtyDaysAgo = sql`now() - interval '30 days'`
@@ -48,6 +51,7 @@ export default async function Page() {
           paidByUserId: expenses.paidByUserId,
           date: expenses.date,
           createdAt: expenses.createdAt,
+          deletedAt: expenses.deletedAt,
           // This is the key: get the status ONLY for the current user
           isPaid: expenseParticipation.isPaid,
         })
@@ -62,7 +66,8 @@ export default async function Page() {
         .where(
           and(
             eq(expenses.apartmentId, orgId),
-            gte(expenses.date, thirtyDaysAgo)
+            gte(expenses.date, thirtyDaysAgo),
+            isNull(expenses.deletedAt)
           )
         )
     : []
