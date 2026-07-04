@@ -100,7 +100,7 @@ export async function GET(request: Request) {
         if (!emailAddress) return
 
         await resend.emails.send({
-          from: "Klee <onboarding@resend.dev>",
+          from: "Klee <system@send.mail.terenzdantes.app>",
           to: emailAddress,
           subject: "Chore Reminder",
           react: ChoreReminder({
@@ -126,7 +126,7 @@ export async function GET(request: Request) {
           }))
 
           await resend.emails.send({
-            from: "Klee <onboarding@resend.dev>",
+            from: "Klee <system@send.mail.terenzdantes.app>",
             to: debtorEmailAddress,
             subject: "Expense Reminder",
             react: ExpenseReminder({
