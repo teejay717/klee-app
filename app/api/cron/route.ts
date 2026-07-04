@@ -7,6 +7,8 @@ import ExpenseReminder from "@/react-email-starter/emails/ExpenseReminder"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get("Authorization")
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -44,6 +46,7 @@ export async function GET(request: Request) {
           acc[debtorId] = []
         }
         acc[debtorId].push({
+          expenseId: expense.expenseId,
           payerId: expense.paidByUserId,
           aiSummary: expense.aiSummary || "a shared expense",
           amount: expense.amount,
@@ -52,7 +55,12 @@ export async function GET(request: Request) {
       },
       {} as Record<
         string,
-        Array<{ payerId: string; aiSummary: string; amount: string }>
+        Array<{
+          expenseId: number
+          payerId: string
+          aiSummary: string
+          amount: string
+        }>
       >
     )
 
@@ -91,16 +99,18 @@ export async function GET(request: Request) {
         .map((result) => result.value)
     )
 
-    const choreResults = await Promise.allSettled(
-      Object.entries(groupedChores).map(async ([userId, chores]) => {
+    const choreResults = []
+
+    for (const [userId, chores] of Object.entries(groupedChores)) {
+      try {
         const user = userById.get(userId)
         const emailAddress = user?.emailAddresses[0]?.emailAddress
         const firstName = user?.firstName || "Roommate"
 
-        if (!emailAddress) return
+        if (!emailAddress) continue
 
         await resend.emails.send({
-          from: "Klee <system@send.mail.terenzdantes.app>",
+          from: "Klee <system@mail.terenzdantes.app>",
           to: emailAddress,
           subject: "Chore Reminder",
           react: ChoreReminder({
@@ -108,35 +118,61 @@ export async function GET(request: Request) {
             choreTitles: chores.map((chore) => chore.title),
           }),
         })
-      })
-    )
-    const expenseResults = await Promise.allSettled(
-      Object.entries(groupedUnpaidExpenses).map(
-        async ([debtorId, rawDebts]) => {
-          const debtorUser = userById.get(debtorId)
-          const debtorEmailAddress = debtorUser?.emailAddresses[0]?.emailAddress
-          const debtorFirstName = debtorUser?.firstName || "Roommate"
 
-          if (!debtorEmailAddress) return
+        choreResults.push({ status: "fulfilled" as const })
+      } catch (error) {
+        choreResults.push({ status: "rejected" as const, reason: error })
+      }
 
-          const strucuturedDebts = rawDebts.map((debt) => ({
+      await delay(600)
+    }
+    const expenseResults = []
+
+    for (const [debtorId, rawDebts] of Object.entries(groupedUnpaidExpenses)) {
+      try {
+        const debtorUser = userById.get(debtorId)
+        const debtorEmailAddress = debtorUser?.emailAddresses[0]?.emailAddress
+        const debtorFirstName = debtorUser?.firstName || "Roommate"
+
+        if (!debtorEmailAddress) continue
+
+        const strucuturedDebts = rawDebts.map((debt) => {
+          const participantsForExpense = [
+            ...new Set([
+              ...rawUnpaidExpenses6Days
+                .filter((item) => item.expenseId === debt.expenseId)
+                .map((item) => item.participant),
+              debt.payerId,
+            ]),
+          ].filter(Boolean)
+
+          const shareAmount =
+            Number(debt.amount) / participantsForExpense.length
+
+          return {
             payerName: userById.get(debt.payerId)?.firstName || "a roommate",
             aiSummary: debt.aiSummary,
-            amount: debt.amount,
-          }))
+            amount: shareAmount.toFixed(2),
+          }
+        })
 
-          await resend.emails.send({
-            from: "Klee <system@send.mail.terenzdantes.app>",
-            to: debtorEmailAddress,
-            subject: "Expense Reminder",
-            react: ExpenseReminder({
-              debtorName: debtorFirstName,
-              debts: strucuturedDebts,
-            }),
-          })
-        }
-      )
-    )
+        await resend.emails.send({
+          from: "Klee <system@mail.terenzdantes.app>",
+          to: debtorEmailAddress,
+          subject: "Expense Reminder",
+          react: ExpenseReminder({
+            debtorName: debtorFirstName,
+            debts: strucuturedDebts,
+          }),
+        })
+
+        expenseResults.push({ status: "fulfilled" as const })
+      } catch (error) {
+        expenseResults.push({ status: "rejected" as const, reason: error })
+      }
+
+      await delay(600)
+    }
 
     const sendFailures = [...choreResults, ...expenseResults].filter(
       (result) => result.status === "rejected"
