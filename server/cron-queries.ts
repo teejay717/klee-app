@@ -1,6 +1,6 @@
 import { db } from "@/db"
 import { chores, expenses, expenseParticipation } from "@/db/schema"
-import { and, eq, isNull, inArray, desc, sql, lte, gte } from "drizzle-orm"
+import { and, eq, isNull, lte, gte } from "drizzle-orm"
 
 export async function getChoresDueOn(targetDate: Date) {
   const startOfDay = new Date(targetDate)
