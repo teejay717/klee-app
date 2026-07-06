@@ -1,51 +1,47 @@
-import { db } from "@/db";
-import { chores } from "@/db/schema";
+import { db } from "@/db"
+import { chores } from "@/db/schema"
 import HeaderComponent from "@/components/HeaderComponent"
 import ChoreList from "@/components/ChoreList"
 import { auth } from "@clerk/nextjs/server"
-import { eq } from "drizzle-orm";
-import AddChoreDialog from "@/components/AddChoreDialog";
-import FilterableChoreList from "@/components/FilterableChoreList";
+import { eq, isNull, and } from "drizzle-orm"
+import AddChoreDialog from "@/components/AddChoreDialog"
+import FilterableChoreList from "@/components/FilterableChoreList"
 
 export default async function Page() {
-    const { orgId } = await auth();
+  const { orgId } = await auth()
 
   // fetch members
 
-    const apartmentChores = orgId 
-        ? await db.select().from(chores).where(eq(chores.apartmentId, orgId)) 
-        : [];
-    
-    const activeChores = apartmentChores.filter(c => !c.isCompleted);
+  const apartmentChores = orgId
+    ? await db
+        .select()
+        .from(chores)
+        .where(and(eq(chores.apartmentId, orgId), isNull(chores.deletedAt)))
+    : []
 
-    return (
-        <div>
-            <HeaderComponent title="Chore History" description="Track completed tasks and assignments">
-                <AddChoreDialog className="bg-blue-900 hover:bg-blue-800 px-8 py-6 text-lg font-semibold min-w-[200px]"/>
-            </HeaderComponent>
-            <main className="max-w-7xl mx-auto mt-10 p-6 space-y-10">
-                <FilterableChoreList allChores={apartmentChores}/>
-            <section>
-                <ChoreList chores={activeChores} buttonOn={false} title="Incomplete Chores" description="Incomplete tasks assigned to roommates"/>
-            </section>
-        </main>
-        </div>
-    )
+  const activeChores = apartmentChores.filter((c) => !c.isCompleted)
+
+  return (
+    <div>
+      <HeaderComponent
+        title="Chore History"
+        description="Track completed tasks and assignments"
+      >
+        <AddChoreDialog className="min-w-[200px] bg-blue-900 px-8 py-6 text-lg font-semibold hover:bg-blue-800" />
+      </HeaderComponent>
+      <main className="mx-auto mt-10 max-w-7xl space-y-10 p-6">
+        <FilterableChoreList allChores={apartmentChores} />
+        <section>
+          <ChoreList
+            chores={activeChores}
+            buttonOn={false}
+            title="Incomplete Chores"
+            description="Incomplete tasks assigned to roommates"
+          />
+        </section>
+      </main>
+    </div>
+  )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // children={<AddChoreDialog members={members} className="bg-blue-900 hover:bg-blue-800 px-8 py-6 text-lg font-semibold min-w-[200px]"/>}
