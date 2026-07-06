@@ -40,6 +40,7 @@ export async function getUnpaidExpensesDays(daysOld: number) {
       amount: expenses.amount,
       paidByUserId: expenses.paidByUserId,
       participant: expenseParticipation.userId,
+      apartmentId: expenses.apartmentId,
     })
     .from(expenses)
     .innerJoin(
