@@ -50,10 +50,11 @@ export const ChoreDigestEmail = ({
           </Text>
 
           <Hr style={hr} />
-          <Text style={footer}>— Terminal Intelligence Core</Text>
+          <Text style={footer}>Klee Apartment Management Platform</Text>
           <Hr style={hr} />
           <Text style={footerSubtext}>
-            Automated Apartment Terminal Intelligence System • Live Cron Routine
+            This is an automated notification. Please do not reply directly to
+            this email.
           </Text>
         </Section>
       </Container>
