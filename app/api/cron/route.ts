@@ -54,6 +54,9 @@ export async function GET(request: Request) {
       ]),
     ]
 
+    const choreResults = []
+    const expenseResults = []
+
     for (const apartmentId of apartmentIds) {
       const apartmentChores = choresByApartment[apartmentId] ?? []
       const apartmentExpenses = expensesByApartment[apartmentId] ?? []
@@ -107,8 +110,6 @@ export async function GET(request: Request) {
           .map((result) => result.value)
       )
 
-      const choreResults = []
-
       for (const [userId, chores] of Object.entries(choresByUser)) {
         try {
           const user = userById.get(userId)
@@ -124,15 +125,20 @@ export async function GET(request: Request) {
               choreTitles: chores.map((chore) => chore.title),
             }),
           })
+          console.log(
+            `[CHORE SUCCESS] Sent to ${emailAddress} (${apartmentName})`
+          )
           choreResults.push({ status: "fulfilled" as const })
         } catch (error) {
+          console.error(
+            `[CHORE ERROR] Failed for user ${userId} (${apartmentName}):`,
+            error
+          )
           choreResults.push({ status: "rejected" as const, reason: error })
         }
 
         await delay(600)
       }
-
-      const expenseResults = []
 
       for (const [userId, debts] of Object.entries(expensesByUser)) {
         try {
@@ -140,7 +146,7 @@ export async function GET(request: Request) {
           const emailAddress = user?.emailAddresses[0]?.emailAddress
           if (!emailAddress) continue
 
-          const strucuturedDebts = debts.map((debt) => {
+          const structuredDebts = debts.map((debt) => {
             const participantsForExpense = [
               ...new Set([
                 ...apartmentExpenses
@@ -167,15 +173,39 @@ export async function GET(request: Request) {
             subject: `Expense Reminder - ${apartmentName}`,
             react: ExpenseReminder({
               debtorName: user?.firstName || "Roommate",
-              debts: strucuturedDebts,
+              debts: structuredDebts,
             }),
           })
+          console.log(
+            `[EXPENSE SUCCESS] Sent to ${emailAddress} (${apartmentName})`
+          )
           expenseResults.push({ status: "fulfilled" as const })
         } catch (error) {
+          console.error(
+            `[EXPENSE ERROR] Failed for user ${userId} (${apartmentName}):`,
+            error
+          )
           expenseResults.push({ status: "rejected" as const, reason: error })
         }
         await delay(600)
       }
+    }
+
+    const failedChoreResults = choreResults.filter(
+      (r) => r.status === "rejected"
+    )
+    const failedExpenseResults = expenseResults.filter(
+      (r) => r.status === "rejected"
+    )
+
+    console.log(
+      `Sent ${choreResults.length} chore emails, ${expenseResults.length} expense emails.`
+    )
+
+    if (failedChoreResults.length > 0 || failedExpenseResults.length > 0) {
+      console.log(
+        `Failed to send ${failedChoreResults.length + failedExpenseResults.length} emails..`
+      )
     }
 
     return NextResponse.json({ ok: true }, { status: 200 })
