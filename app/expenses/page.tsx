@@ -6,7 +6,16 @@ import { eq, inArray, and, isNull } from "drizzle-orm"
 import FilterableExpenseList from "@/components/FilterableExpenseList"
 import AddExpenseDialog from "@/components/AddExpenseDialog"
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: { tab?: string; page?: string }
+}) {
+  const tab = searchParams.tab || "week"
+  const page = searchParams.page ? parseInt(searchParams.page) : 1
+  const pageSize = 5
+  const offset = (page - 1) * pageSize
+
   const { orgId } = await auth()
 
   const apartmentExpenses = orgId
@@ -41,6 +50,9 @@ export default async function Page() {
         <FilterableExpenseList
           allExpenses={apartmentExpenses}
           expenseParticipation={participations}
+          activeTab={tab.toString() as "week" | "month" | "all"}
+          currentPage={page}
+          totalPages={Math.ceil(apartmentExpenses.length / pageSize)}
         />
       </main>
     </div>
