@@ -11,8 +11,9 @@ export default async function Page({
 }: {
   searchParams: { tab?: string; page?: string }
 }) {
-  const tab = searchParams.tab || "week"
-  const page = searchParams.page ? parseInt(searchParams.page) : 1
+  const params = await searchParams
+  const tab = (await params.tab) || "week"
+  const page = params.page ? parseInt(params.page) : 1
   const pageSize = 5
   const offset = (page - 1) * pageSize
 
