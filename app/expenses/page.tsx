@@ -14,8 +14,6 @@ export default async function Page({
   const params = await searchParams
   const tab = (await params.tab) || "week"
   const page = params.page ? parseInt(params.page) : 1
-  const pageSize = 5
-  const offset = (page - 1) * pageSize
 
   const { orgId } = await auth()
 
@@ -53,7 +51,6 @@ export default async function Page({
           expenseParticipation={participations}
           activeTab={tab.toString() as "week" | "month" | "all"}
           currentPage={page}
-          totalPages={Math.ceil(apartmentExpenses.length / pageSize)}
         />
       </main>
     </div>

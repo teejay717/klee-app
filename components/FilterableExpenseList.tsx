@@ -1,9 +1,9 @@
 "use client"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ExpenseList from "./ExpensesList"
 import ExpensesCards from "./ExpenseCards"
+import { PaginationComponent } from "./PaginationComponent"
 
 type ExpenseParticipation = {
   id: number
@@ -28,7 +28,6 @@ interface FilterableExpenseListProps {
   expenseParticipation: ExpenseParticipation[]
   activeTab: "week" | "month" | "all"
   currentPage: number
-  totalPages: number
 }
 
 export default function FilterableChoreList({
@@ -36,23 +35,17 @@ export default function FilterableChoreList({
   expenseParticipation = [],
   activeTab = "week",
   currentPage = 1,
-  totalPages = 1,
 }: FilterableExpenseListProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  const pageSize = 10
+
   const updateTab = (tab: string) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set("tab", tab)
     params.set("page", "1") // Reset to first page when changing tabs
-    router.push(`${pathname}?${params.toString()}`)
-  }
-
-  const updatePage = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set("tab", activeTab)
-    params.set("page", page.toString())
     router.push(`${pathname}?${params.toString()}`)
   }
 
@@ -78,6 +71,11 @@ export default function FilterableChoreList({
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
+  const totalPages = Math.max(1, Math.ceil(filteredExpenses.length / pageSize))
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedExpenses = filteredExpenses.slice(startIndex, endIndex)
+
   return (
     <div>
       <section className="mb-6">
@@ -98,13 +96,27 @@ export default function FilterableChoreList({
 
           <TabsContent value={activeTab}>
             <ExpenseList
-              expenses={filteredExpenses}
+              expenses={paginatedExpenses}
               expenseParticipation={expenseParticipation}
               title={tabTitle}
               description="Shared expenses and their payment status"
             />
           </TabsContent>
         </Tabs>
+        <section className="mt-6">
+          {totalPages > 1 && (
+            <PaginationComponent
+              totalPages={totalPages}
+              currentPage={currentPage}
+              getPageHref={(page) => {
+                const params = new URLSearchParams(searchParams.toString())
+                params.set("tab", activeTab)
+                params.set("page", page.toString())
+                return `${pathname}?${params.toString()}`
+              }}
+            />
+          )}
+        </section>
       </div>
     </div>
   )
