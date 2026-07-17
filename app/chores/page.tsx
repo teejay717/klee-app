@@ -7,7 +7,14 @@ import { eq, isNull, and } from "drizzle-orm"
 import AddChoreDialog from "@/components/AddChoreDialog"
 import FilterableChoreList from "@/components/FilterableChoreList"
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: { tab?: string; page?: string }
+}) {
+  const params = await searchParams
+  const tab = (await params.tab) || "week"
+  const page = params.page ? parseInt(params.page) : 1
   const { orgId } = await auth()
 
   // fetch members
@@ -30,7 +37,11 @@ export default async function Page() {
         <AddChoreDialog className="min-w-[200px] bg-blue-900 px-8 py-6 text-lg font-semibold hover:bg-blue-800" />
       </HeaderComponent>
       <main className="mx-auto mt-10 max-w-7xl space-y-10 p-6">
-        <FilterableChoreList allChores={apartmentChores} />
+        <FilterableChoreList
+          allChores={apartmentChores}
+          activeTab={tab.toString() as "week" | "month" | "all"}
+          currentPage={page}
+        />
         <section>
           <ChoreList
             chores={activeChores}
