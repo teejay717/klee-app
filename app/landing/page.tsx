@@ -48,7 +48,7 @@ export default function LandingPage() {
           <div className="space-y-8 max-w-4xl">
             {/* Announcement */}
             <div className="flex justify-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-secondary text-secondary-foreground rounded-full border border-border text-sm">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-secondary text-foreground rounded-full border border-border text-sm">
                 <span className="text-xs font-medium">New features arriving soon</span>
                 <ArrowRight size={14} />
               </div>
@@ -70,11 +70,11 @@ export default function LandingPage() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <SignUpButton mode="modal">
-                <Button size="lg" className="bg-primary hover:bg-accent text-primary-foreground text-base px-8 py-6">
+                <Button size="lg" className="bg-primary hover:bg-accent text-primary-foreground text-base px-6 py-6">
                   Start for free
                 </Button>
               </SignUpButton>
-              <Button size="lg" variant="outline" className="text-base px-8 py-6">
+              <Button size="lg" variant="outline" className="text-base px-6 py-6">
                 Talk to sales
               </Button>
             </div>
