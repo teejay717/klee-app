@@ -56,9 +56,8 @@ export default function LandingPage() {
 
             {/* Headline */}
             <div>
-              <p className="text-xl md:text-2xl text-primary italic font-serif mb-2">Welcome to</p>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground tracking-tight leading-tight text-balance font-serif italic">
-                apartment harmony.
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground tracking-tight leading-tight text-balance">
+                Welcome to apartment harmony.
               </h1>
             </div>
 

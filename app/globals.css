@@ -124,10 +124,9 @@
   body {
     @apply bg-background text-foreground;
     background-image: 
-      radial-gradient(circle, rgba(79, 120, 180, 0.06) 1.2px, transparent 1.2px),
-      radial-gradient(circle, rgba(100, 150, 210, 0.04) 2px, transparent 2px);
-    background-size: 60px 60px, 90px 90px;
-    background-position: 0 0, 30px 30px;
+      linear-gradient(90deg, rgba(79, 120, 180, 0.08) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(100, 150, 210, 0.06) 1px, transparent 1px);
+    background-size: 50px 50px;
     background-attachment: fixed;
   }
   html {
