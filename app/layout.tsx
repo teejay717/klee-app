@@ -49,7 +49,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("light", "antialiased", fontMono.variable, "font-sans", geist.variable)}
+      className={cn("light", "antialiased", fontMono.variable, "font-sans", geist.variable, "bg-background")}
     >
       <body>
         <ClerkProvider>
