@@ -12,7 +12,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-2">
             <span className="text-2xl font-bold text-foreground tracking-tight">klee</span>
           </div>
-          <nav className="hidden md:flex items-center gap-8">
+          {/* <nav className="hidden md:flex items-center gap-8">
             <a href="#" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
               Platform
             </a>
@@ -25,11 +25,11 @@ export default function LandingPage() {
             <a href="#" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
               Pricing
             </a>
-          </nav>
+          </nav> */}
           <div className="flex items-center gap-3">
             <SignInButton mode="modal">
               <Button variant="ghost" className="text-sm font-medium">
-                Sign in
+                Log in
               </Button>
             </SignInButton>
             <SignUpButton mode="modal">
@@ -63,7 +63,7 @@ export default function LandingPage() {
 
             {/* Subheadline */}
             <p className="mx-auto max-w-2xl text-lg md:text-xl text-muted-foreground leading-relaxed">
-              Klee is the platform that manages chores, splits expenses, and brings roommates together. 
+              Klee is the platform that manages chores, splits expenses, and brings roommates together.
               Everything your household needs in one place.
             </p>
 
