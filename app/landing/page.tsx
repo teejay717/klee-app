@@ -10,7 +10,7 @@ export default function LandingPage() {
       <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-foreground tracking-tight">klee</span>
+            <span className="text-2xl font-bold text-primary tracking-tight">klee</span>
           </div>
           {/* <nav className="hidden md:flex items-center gap-8">
             <a href="#" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
@@ -56,8 +56,9 @@ export default function LandingPage() {
 
             {/* Headline */}
             <div>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground tracking-tight leading-tight text-balance">
-                Welcome to apartment harmony.
+              <p className="text-xl md:text-2xl text-primary italic font-serif mb-2">Welcome to</p>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground tracking-tight leading-tight text-balance font-serif italic">
+                apartment harmony.
               </h1>
             </div>
 
