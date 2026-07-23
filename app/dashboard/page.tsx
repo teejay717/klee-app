@@ -6,10 +6,8 @@ import { clerkClient } from "@clerk/nextjs/server"
 import ChoreList from "@/components/ChoreList"
 import RoommatesCard from "@/components/RoommatesCard"
 import SharedExpensesCard from "@/components/SharedExpensesCard"
-import HeaderComponent from "@/components/HeaderComponent"
 import RecentActivityCard from "@/components/RecentActivityCard"
 import DashboardHeader from "@/components/DashboardHeader"
-import TestAI from "@/components/TestAI"
 
 export default async function Page() {
   const { userId, orgId } = await auth()
