@@ -82,7 +82,7 @@ function parseFormData<T>(schema: z.ZodType<T>, formData: FormData): T {
   // Converts FormData into a plain object so Zod can validate keys/values.
 
   // const raw = Object.fromEntries(formData.entries())
-  const raw: any = {}
+  const raw: Record<string, unknown> = {}
   for (const key of formData.keys()) {
     const values = formData.getAll(key)
     raw[key] = values.length > 1 ? values : values[0]
@@ -300,9 +300,9 @@ export async function createExpense(formData: FormData) {
         organizationId: orgId,
       })
 
-    if (uniqueParticipants?.length! > 0) {
+    if (uniqueParticipants.length > 0) {
       await db.insert(expenseParticipation).values(
-        uniqueParticipants?.map((p) => ({
+        uniqueParticipants.map((p) => ({
           expenseId: insertedExpense.id,
           userId: p,
           isPaid: p === paidByUserId,

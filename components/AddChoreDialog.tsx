@@ -27,14 +27,6 @@ import { useApartment } from "@/context/ApartmentContext";
 import { useFormStatus } from "react-dom";
 import { action } from "@/lib/utils";
 
-export default function AddChoreDialog({ className = "bg-blue-900 hover:bg-blue-800 w-full" }) {
-const { members } = useApartment()
-const defaultMember = useMemo(() => members[0]?.userId ?? "", [members]);
-const [assigneeUserId, setAssigneeUserId] = useState(defaultMember);
-const [open, setOpen] = useState(false);
-const [submitError, setSubmitError] = useState<string | null>(null);
-const formRef = useRef<HTMLFormElement>(null);
-
 function SubmitButton({ disabled }: { disabled: boolean }) {
     const { pending } = useFormStatus();
 
@@ -49,6 +41,14 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
         </Button>
     );
 }
+
+export default function AddChoreDialog({ className = "bg-blue-900 hover:bg-blue-800 w-full" }) {
+const { members } = useApartment()
+const defaultMember = useMemo(() => members[0]?.userId ?? "", [members]);
+const [assigneeUserId, setAssigneeUserId] = useState(defaultMember);
+const [open, setOpen] = useState(false);
+const [submitError, setSubmitError] = useState<string | null>(null);
+const formRef = useRef<HTMLFormElement>(null);
 
 // async function handleCreateChore(formData: FormData) {
 //     setSubmitError(null);

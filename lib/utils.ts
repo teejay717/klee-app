@@ -5,10 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export async function action(
-  promise: Promise<{ error?: string; success?: boolean } | any>
-) {
+export async function action<T>(promise: Promise<T>) {
   const res = await promise
-  if (res?.error) throw new Error(res.error)
+  if (res && typeof res === "object" && "error" in res) {
+    const error = (res as { error?: unknown }).error
+    if (error) throw new Error(String(error))
+  }
   return res
 }

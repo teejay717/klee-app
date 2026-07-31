@@ -1,4 +1,5 @@
 "use client"
+import { useState } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ExpenseList from "./ExpensesList"
@@ -56,8 +57,9 @@ export default function FilterableChoreList({
         ? "This Month's Expenses"
         : "This Week's Expenses"
 
-  const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-  const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+  const [now] = useState(() => Date.now())
+  const oneWeekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000)
+  const oneMonthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000)
 
   const filteredExpenses = allExpenses
     .filter((expense) => {

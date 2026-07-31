@@ -11,10 +11,20 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
+type ActivityItem = {
+  id: string | number
+  type: "chore" | "expense" | "payment"
+  title: string
+  userId: string
+  time: string | Date | null
+  amount?: string | number
+  isCompleted?: boolean
+}
+
 export default function RecentActivityCard({
   activities,
 }: {
-  activities: any[]
+  activities: ActivityItem[]
 }) {
   const { members } = useApartment()
 
@@ -105,7 +115,7 @@ export default function RecentActivityCard({
                         <>
                           Added Expense:{" "}
                           <span className="inline-block rounded-md bg-slate-200/80 px-2 py-1 text-blue-900">
-                            {a.title} - {formatCurrency(a.amount)}
+                            {a.title} - {formatCurrency(Number(a.amount))}
                           </span>
                         </>
                       ) : (

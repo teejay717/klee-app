@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { Resend } from "resend"
-import { clerkClient } from "@clerk/nextjs/server"
+import { clerkClient, type User } from "@clerk/nextjs/server"
 import { getChoresDueOn, getUnpaidExpensesDays } from "@/server/cron-queries"
 import ChoreReminder from "@/react-email-starter/emails/ChoreReminder"
 import ExpenseReminder from "@/react-email-starter/emails/ExpenseReminder"
@@ -104,7 +104,7 @@ export async function GET(request: Request) {
           .filter(
             (
               result
-            ): result is PromiseFulfilledResult<readonly [string, any]> =>
+            ): result is PromiseFulfilledResult<readonly [string, User]> =>
               result.status === "fulfilled"
           )
           .map((result) => result.value)

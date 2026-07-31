@@ -21,9 +21,6 @@ export function useIsMobile() {
     // Modern browsers support addEventListener on MediaQueryList
     mql.addEventListener("change", onChange)
 
-    // Final check in case the window resized before the effect ran
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-
     return () => mql.removeEventListener("change", onChange)
   }, [])
 
