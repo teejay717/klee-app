@@ -195,37 +195,42 @@ export default async function Page() {
           )
       : []
 
+  const openChoreCounts = activeChores.reduce<Record<string, number>>(
+    (acc, chore) => {
+      acc[chore.userId] = (acc[chore.userId] ?? 0) + 1
+      return acc
+    },
+    {}
+  )
+
   return (
-    <div>
-      {/* <HeaderComponent
-        title="Dashboard"
-        description="Welcome back! Here's your apartment overview."
-      /> */}
-      <main className="mx-auto mt-10 max-w-7xl p-6">
-        <div className="flex flex-col gap-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
-            <div className="md:col-span-5">
-              <DashboardHeader
-                unpaidExpenses={myUnpaidExpenses}
-                pendingChores={myActiveChores}
-                orgName={orgName}
-              />
-            </div>
-            <div className="md:col-span-3">
-              <SharedExpensesCard
-                expenses={apartmentExpenses}
-                expenseParticipation={participations}
-              />
-            </div>
-            <div className="md:col-span-2">
-              <RoommatesCard />
-            </div>
-          </div>
-          <ChoreList chores={dashboardChores} buttonOn={true} />
+    <div className="flex flex-col gap-7">
+      <DashboardHeader
+        unpaidExpenses={myUnpaidExpenses}
+        pendingChores={myActiveChores}
+        orgName={orgName}
+        expenses={apartmentExpenses}
+        expenseParticipation={participations}
+      />
+      <div className="grid grid-cols-1 items-start gap-5 min-[900px]:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+        <div className="flex flex-col gap-5">
+          <ChoreList
+            chores={dashboardChores}
+            buttonOn={true}
+            title="Chores"
+            description={`${completedChores.length} of ${apartmentChores.length} done`}
+          />
           <RecentActivityCard activities={recentActivity} />
-          {/* <TestAI apartmentId={orgId as string} /> */}
         </div>
-      </main>
+        <div className="flex flex-col gap-5">
+          <SharedExpensesCard
+            expenses={apartmentExpenses}
+            expenseParticipation={participations}
+          />
+          <RoommatesCard openChoreCounts={openChoreCounts} />
+        </div>
+      </div>
+      {/* <TestAI apartmentId={orgId as string} /> */}
     </div>
   )
 }

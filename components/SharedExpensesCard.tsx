@@ -1,20 +1,17 @@
 "use client"
 
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import AddExpenseDialog from "./AddExpenseDialog"
+import Link from "next/link"
+import { Card } from "@/components/ui/card"
 import { useApartment } from "@/context/ApartmentContext"
+import { formatPeso, toDate } from "@/lib/household"
+import { EmptyState, MemberAvatar, PanelHeader } from "./HouseholdUI"
 
 type ExpenseItem = {
   id: number
   amount: string | number
+  description: string
+  paidByUserId: string
+  date: Date | string
 }
 
 type ParticipationItem = {
@@ -28,81 +25,70 @@ type ExpensesCardProps = {
   expenseParticipation: ParticipationItem[]
 }
 
-export default function SharedExpensesCard({
-  expenses,
-  expenseParticipation = [],
-}: ExpensesCardProps) {
-  const { currentUserId } = useApartment()
-  const totalAmount = expenses.reduce(
-    (acc, item) => acc + Number(item.amount),
-    0
-  )
+// Totals for these expenses now live in the dashboard stat strip (DashboardHeader).
+export default function SharedExpensesCard({ expenses }: ExpensesCardProps) {
+  const { members, currentUserId } = useApartment()
+  const memberLabelById = new Map(members.map((m) => [m.userId, m.label]))
 
-  const yourShare = expenses.reduce((acc, expense) => {
-    const myParticipation = expenseParticipation.find(
-      (p) => p.expenseId === expense.id && p.userId === currentUserId
-    )
-
-    const amountToAdd =
-      myParticipation && !myParticipation.isPaid
-        ? Number(expense.amount) /
-          expenseParticipation.filter((p) => p.expenseId === expense.id).length
-        : 0
-
-    return acc + amountToAdd
-  }, 0)
-
-  const formatCurrency = (num: number) => {
-    return new Intl.NumberFormat("en-PH", {
-      style: "currency",
-      currency: "PHP",
-      maximumFractionDigits: 2,
-    }).format(num)
-  }
+  const recent = [...expenses]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3)
 
   return (
-    <Card className="h-52 w-full shadow-md">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="gap-3.5 p-[22px]">
+      <PanelHeader
+        title="Expenses"
+        meta={expenses.length > 0 ? "Last 30 days" : undefined}
+      />
+
+      {recent.length === 0 ? (
+        <EmptyState
+          title="Nothing shared in the last 30 days"
+          description="Log rent, groceries or supplies to split them."
+        />
+      ) : (
         <div className="flex flex-col">
-          <CardTitle className="text-xl font-bold">Shared Expenses</CardTitle>
-          <CardDescription>Past 30 days overview</CardDescription>
-        </div>
-        <CardAction className="self-auto">
-          <AddExpenseDialog />
-        </CardAction>
-      </CardHeader>
+          {recent.map((expense) => {
+            const payer =
+              expense.paidByUserId === currentUserId
+                ? "You"
+                : (memberLabelById.get(expense.paidByUserId) ?? "Unknown").split(" ")[0]
+            const date = toDate(expense.date)?.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })
 
-      <CardContent>
-        <div className="mt-4 grid grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">
-              Total Shared
-            </p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-foreground">
-                {formatCurrency(totalAmount)}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Rent, groceries, supplies
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-muted-foreground">
-              Your Share
-            </p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-blue-900">
-                {formatCurrency(yourShare)}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Unpaid from past 30 days
-            </p>
-          </div>
+            return (
+              <div
+                key={expense.id}
+                className="flex items-center gap-3 border-t border-row-divider px-1 py-3"
+              >
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="truncate text-[15px] font-semibold">
+                    {expense.description}
+                  </span>
+                  <span className="truncate text-[13px] text-muted-foreground">
+                    {payer} · {date ?? "No date"}
+                  </span>
+                </div>
+                <span className="text-[15px] font-semibold tabular-nums">
+                  {formatPeso(Number(expense.amount))}
+                </span>
+                <MemberAvatar userId={expense.paidByUserId} size={24} />
+              </div>
+            )
+          })}
         </div>
-      </CardContent>
+      )}
+
+      {expenses.length > recent.length ? (
+        <Link
+          href="/expenses"
+          className="self-start py-1 text-sm font-semibold text-primary transition-colors duration-[120ms] hover:text-primary-hover"
+        >
+          View all {expenses.length} expenses
+        </Link>
+      ) : null}
     </Card>
   )
 }

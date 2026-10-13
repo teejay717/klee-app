@@ -1,11 +1,12 @@
 "use client"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ChoreList from "./ChoreList"
 import { type chores } from "@/db/schema"
 import { InferSelectModel } from "drizzle-orm"
 import { PaginationComponent } from "./PaginationComponent"
+import { PeriodTabs, StatStrip } from "./HouseholdUI"
+import { getPeriodRange, isOverdue, PERIOD_LABELS } from "@/lib/household"
 
 type Chore = InferSelectModel<typeof chores>
 
@@ -33,12 +34,7 @@ export default function FilterableChoreList({
     router.push(`${pathname}?${params.toString()}`)
   }
 
-  const tabTitle =
-    activeTab === "all"
-      ? "All Chores"
-      : activeTab === "month"
-        ? "This Month's Chores"
-        : "This Week's Chores"
+  const periodLabel = PERIOD_LABELS[activeTab]
 
   const now = useMemo(() => new Date(), [])
   const oneWeekAgo = useMemo(
@@ -49,6 +45,9 @@ export default function FilterableChoreList({
     () => new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
     [now]
   )
+
+  const activeChores = allChores.filter((c) => !c.isCompleted)
+  const overdueCount = activeChores.filter((c) => isOverdue(c.deadline)).length
 
   const filteredChores = allChores
     .filter((chore) => {
@@ -73,37 +72,52 @@ export default function FilterableChoreList({
   const paginatedChores = filteredChores.slice(startIndex, endIndex)
 
   return (
-    <div>
-      <Tabs value={activeTab} onValueChange={updateTab}>
-        <TabsList className="mb-2 grid w-full grid-cols-3 lg:w-auto">
-          <TabsTrigger value="week">This Week</TabsTrigger>
-          <TabsTrigger value="month">This Month</TabsTrigger>
-          <TabsTrigger value="all">All Time</TabsTrigger>
-        </TabsList>
+    <div className="flex flex-col gap-6">
+      <PeriodTabs
+        value={activeTab}
+        onValueChange={updateTab}
+        range={getPeriodRange(activeTab, now)}
+      />
 
-        <TabsContent value={activeTab}>
-          <ChoreList
-            chores={paginatedChores}
-            buttonOn={false}
-            title={tabTitle}
-            description={`${filteredChores.length} Tasks completed`}
-          />
-        </TabsContent>
-      </Tabs>
-      <section className="mt-6">
-        {totalPages > 1 && (
-          <PaginationComponent
-            totalPages={totalPages}
-            currentPage={currentPage}
-            getPageHref={(page) => {
-              const params = new URLSearchParams(searchParams.toString())
-              params.set("tab", activeTab)
-              params.set("page", page.toString())
-              return `${pathname}?${params.toString()}`
-            }}
-          />
-        )}
-      </section>
+      <StatStrip
+        stats={[
+          { label: `Completed · ${periodLabel}`, value: filteredChores.length },
+          { label: "Still open", value: activeChores.length },
+          { label: "Overdue", value: overdueCount },
+        ]}
+      />
+
+      <div className="grid grid-cols-1 gap-5 min-[900px]:grid-cols-2">
+        <ChoreList
+          chores={activeChores}
+          buttonOn={false}
+          title="Open"
+          description="Assigned to roommates"
+          emptyTitle="All caught up"
+          emptyDescription="No open chores in the house."
+        />
+        <ChoreList
+          chores={paginatedChores}
+          buttonOn={false}
+          title="Completed"
+          description={periodLabel}
+          emptyTitle={`Nothing completed ${periodLabel.toLowerCase()}`}
+          emptyDescription="Ticked-off chores will be listed here."
+        >
+          {totalPages > 1 && (
+            <PaginationComponent
+              totalPages={totalPages}
+              currentPage={currentPage}
+              getPageHref={(page) => {
+                const params = new URLSearchParams(searchParams.toString())
+                params.set("tab", activeTab)
+                params.set("page", page.toString())
+                return `${pathname}?${params.toString()}`
+              }}
+            />
+          )}
+        </ChoreList>
+      </div>
     </div>
   )
 }

@@ -1,15 +1,8 @@
 "use client";
 
-import {
-    Card,
-    CardAction,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
 import { useApartment } from "@/context/ApartmentContext";
+import { formatPeso, getExpenseTotals, PERIOD_LABELS, type Period } from "@/lib/household";
+import { StatStrip } from "./HouseholdUI";
 
 type FilteredExpenseItem = {
     id: number
@@ -36,23 +29,15 @@ type ExpensesCardProps = {
 
 
 export default function ExpensesCards({ filteredExpenses, expenseParticipation = [], activeTab }: ExpensesCardProps) {
-    const { members, currentUserId } = useApartment()
-    const tabTitle = activeTab === 'all' ?
-        "All Time" : activeTab === 'week' ?
-        "Last 7 Days" : "Last 30 Days";
-    
-    const totalPeriodAmount = filteredExpenses.reduce((acc, item) => acc + Number(item.amount), 0);
+    const { currentUserId } = useApartment()
+    const periodLabel = PERIOD_LABELS[activeTab as Period] ?? PERIOD_LABELS.week;
 
-    const yourPeriodShare = filteredExpenses.reduce((acc, expense) => {
-
-        const myParticipation = expenseParticipation.find(p => p.expenseId === expense.id && p.userId === currentUserId);
-        
-        const amountToAdd = (myParticipation && !myParticipation.isPaid) 
-            ? (Number(expense.amount) / expenseParticipation.filter(p => p.expenseId === expense.id).length) 
-            : 0;
-
-        return acc + amountToAdd
-    }, 0)
+    // your unpaid share of the expenses in this period
+    const { total: totalPeriodAmount, yourShare: yourPeriodShare } = getExpenseTotals(
+        filteredExpenses,
+        expenseParticipation,
+        currentUserId
+    );
 
     const unpaidExpenses = filteredExpenses.reduce((acc, expense) => {
         const myParticipation = expenseParticipation.find(p => p.expenseId === expense.id && p.userId === currentUserId && !p.isPaid);
@@ -60,73 +45,14 @@ export default function ExpensesCards({ filteredExpenses, expenseParticipation =
 
         return acc + amountToAdd;
     }, 0)
-    // go through expenses -> for each expense check the participations of each member - > if they paid already, we do not add their share anymore to the total "you share" amount
-    // the issue is i dont know how to go from expenses to each participations
 
-    const formatCurrency = (num: number) => {
-        return new Intl.NumberFormat('en-PH', {
-            style: 'currency',
-            currency: 'PHP',
-            maximumFractionDigits: 2,
-        }).format(num);
-    };
-    
 return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-        <Card className="shadow-md">
-            <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                    Total Expenses
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-foreground">
-                        {formatCurrency(totalPeriodAmount)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                        {filteredExpenses.length} expenses
-                    </span>
-                </div>
-            </CardContent>
-        </Card>
-
-        <Card className="shadow-md border-l-4 border-l-blue-900">
-            <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                    Your Share
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-blue-900">
-                        {formatCurrency(yourPeriodShare)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                        {tabTitle}
-                    </span>
-                    {/* Optional: You can add the percentage indicator here if you have the trend data */}
-                </div>
-            </CardContent>
-        </Card>
-
-        <Card className="shadow-sm">
-            <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                    Total Unpaid Expenses
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-blue-900">
-                        {unpaidExpenses}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                        {`Unpaid Expense(s)`} 
-                    </span>
-                </div>
-            </CardContent>
-        </Card>
-    </div>
+    <StatStrip
+        stats={[
+            { label: `Total shared · ${periodLabel}`, value: formatPeso(totalPeriodAmount) },
+            { label: "Your share", value: formatPeso(yourPeriodShare), accent: true },
+            { label: "Unpaid", value: unpaidExpenses },
+        ]}
+    />
 );
 }

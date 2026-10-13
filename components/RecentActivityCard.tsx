@@ -1,15 +1,8 @@
 "use client"
-import { PhilippinePeso, CircleCheckBig } from "lucide-react"
 import { useApartment } from "@/context/ApartmentContext"
-import Image from "next/image"
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
+import { formatPeso } from "@/lib/household"
+import { EmptyState, MemberAvatar, PanelHeader } from "./HouseholdUI"
 
 type ActivityItem = {
   id: string | number
@@ -26,7 +19,7 @@ export default function RecentActivityCard({
 }: {
   activities: ActivityItem[]
 }) {
-  const { members } = useApartment()
+  const { members, currentUserId } = useApartment()
 
   function getDateLabel(date: Date | string | null) {
     if (!date) return "No date"
@@ -56,105 +49,55 @@ export default function RecentActivityCard({
     return d.toLocaleDateString()
   }
 
-  const formatCurrency = (num: number) => {
-    return new Intl.NumberFormat("en-PH", {
-      style: "currency",
-      currency: "PHP",
-      maximumFractionDigits: 0,
-    }).format(num)
-  }
-
   return (
-    <Card className="max-w-2xl shadow-md">
-      <CardHeader className="flex items-center justify-between gap-3">
-        <div className="flex flex-col">
-          <CardTitle className="text-xl font-bold">Recent Activity</CardTitle>
-          <CardDescription>
-            What&apos;s happening in your apartment
-          </CardDescription>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {activities.map((a) => {
-          return (
-            <div
-              key={a.id}
-              className={`my-2 flex items-center justify-between gap-3 rounded-t border-b p-3 ${a.isCompleted ? "bg-slate-100/50" : ""} hover:bg-slate-100/50`}
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                {(() => {
-                  const member = members.find((m) => m.userId === a.userId)
-                  if (!member) return null
-                  return (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm font-medium text-white shadow-sm">
-                      {member.imageUrl ? (
-                        <Image
-                          src={member.imageUrl}
-                          alt={member.label}
-                          width={32}
-                          height={32}
-                          className="h-full w-full rounded-full object-cover"
-                        />
-                      ) : (
-                        member.initials || member.label[0]
-                      )}
-                    </div>
-                  )
-                })()}
-                <div className="min-w-0">
-                  <div className="flex items-center justify-start gap-2">
-                    <p className="truncate font-medium">
-                      {a.type === "chore" ? (
-                        <>
-                          Completed:{" "}
-                          <span className="inline-block rounded-md bg-slate-200/80 px-2 py-1 text-blue-900">
-                            {a.title}
-                          </span>
-                        </>
-                      ) : a.type === "expense" ? (
-                        <>
-                          Added Expense:{" "}
-                          <span className="inline-block rounded-md bg-slate-200/80 px-2 py-1 text-blue-900">
-                            {a.title} - {formatCurrency(Number(a.amount))}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          Paid their share of:{" "}
-                          <span className="inline-block rounded-md bg-slate-200/80 px-2 py-1 font-medium text-blue-900">
-                            {a.title}
-                          </span>
-                        </>
-                      )}
-                    </p>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-600">
-                    {getDateLabel(a.time)}
-                  </p>
-                </div>
-              </div>
+    <Card className="gap-3.5 p-[22px]">
+      <PanelHeader title="Recent activity" meta="Last 30 days" />
 
-              <div className="flex items-center gap-2">
-                <span className="text-slate-400">
-                  {a.type === "chore" ? (
-                    <CircleCheckBig />
-                  ) : a.type === "expense" ? (
-                    <PhilippinePeso />
-                  ) : (
-                    <CircleCheckBig />
-                  )}
+      {activities.length === 0 ? (
+        <EmptyState
+          title="No recent activity"
+          description="Completed chores, new expenses and payments will show up here."
+        />
+      ) : (
+        <div className="flex flex-col">
+          {activities.map((a) => {
+            const member = members.find((m) => m.userId === a.userId)
+            const name =
+              a.userId === currentUserId
+                ? "You"
+                : (member?.label ?? "Someone").split(" ")[0]
+            const verb =
+              a.type === "chore"
+                ? "completed"
+                : a.type === "expense"
+                  ? "added"
+                  : "paid their share of"
+
+            return (
+              <div
+                key={a.id}
+                className="flex items-center gap-3 border-t border-row-divider px-1 py-3"
+              >
+                <MemberAvatar userId={a.userId} size={24} />
+                <p className="min-w-0 flex-1 truncate text-sm text-ink-secondary">
+                  <span className="font-semibold text-foreground">{name}</span>{" "}
+                  {verb}{" "}
+                  <span className="font-semibold text-foreground">{a.title}</span>
+                  {a.type === "expense" ? (
+                    <span className="tabular-nums">
+                      {" "}
+                      · {formatPeso(Number(a.amount))}
+                    </span>
+                  ) : null}
+                </p>
+                <span className="shrink-0 text-[13px] text-muted-foreground">
+                  {getDateLabel(a.time)}
                 </span>
               </div>
-            </div>
-          )
-        })}
-
-        {activities.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No recent activities yet!
-          </p>
-        ) : null}
-      </CardContent>
+            )
+          })}
+        </div>
+      )}
     </Card>
   )
 }

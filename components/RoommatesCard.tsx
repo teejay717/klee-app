@@ -1,60 +1,45 @@
 "use client"
 
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { useApartment } from "@/context/ApartmentContext"
-import Image from "next/image"
+import { MemberAvatar, PanelHeader } from "./HouseholdUI"
 
-export default function RoommatesCard() {
+type RoommatesCardProps = {
+  // open chores per member id, shown on the right of each row
+  openChoreCounts?: Record<string, number>
+}
+
+export default function RoommatesCard({
+  openChoreCounts = {},
+}: RoommatesCardProps) {
   const { members, currentUserId } = useApartment()
 
   return (
-    <Card className="max-h-52 scroll-pb-2 overflow-y-auto shadow-md">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold">Your Roommates</CardTitle>
-        <CardDescription>{members?.length} members</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {members && members.length > 0 ? (
-            members.map((member) => (
-              <div key={member.userId} className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm font-medium text-white">
-                  {member.imageUrl ? (
-                    <Image
-                      src={member.imageUrl}
-                      alt={member.label}
-                      width={32}
-                      height={32}
-                      className="h-full w-full rounded-full object-cover"
-                    />
-                  ) : (
-                    member.initials || member.label[0]
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm font-medium">
-                    <span>{member.label}</span>
-                    <span className="text-muted-foreground">
-                      {" "}
-                      {member.userId === currentUserId ? "(You)" : ""}
-                    </span>
-                  </p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-gray-500">No members yet</p>
-          )}
-        </div>
-      </CardContent>
+    <Card className="gap-3 p-[22px]">
+      <PanelHeader title="Roommates" meta={members?.length ?? 0} />
+      {members && members.length > 0 ? (
+        members.map((member) => {
+          const open = openChoreCounts[member.userId] ?? 0
+          return (
+            <div key={member.userId} className="flex items-center gap-3">
+              <MemberAvatar userId={member.userId} size={32} />
+              <p className="min-w-0 truncate text-sm font-medium">
+                {member.label}
+                {member.userId === currentUserId ? (
+                  <span className="text-muted-foreground"> · you</span>
+                ) : null}
+              </p>
+              {open > 0 ? (
+                <span className="ml-auto shrink-0 text-xs font-medium text-muted-foreground">
+                  {open} {open === 1 ? "chore" : "chores"}
+                </span>
+              ) : null}
+            </div>
+          )
+        })
+      ) : (
+        <p className="text-sm text-muted-foreground">No members yet</p>
+      )}
     </Card>
   )
 }

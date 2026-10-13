@@ -6,7 +6,8 @@ type Member = {
     userId: string,
     label: string,
     initials: string,
-    imageUrl?: string
+    imageUrl?: string,
+    hasImage?: boolean
 }
 
 interface ApartmentContextType {
@@ -37,7 +38,8 @@ export function ApartmentProvider({ children }: { children: React.ReactNode }) {
             userId: user.userId,
             label: fullName || user.identifier || "Unknown Member",
             initials: initials,
-            imageUrl: user.imageUrl
+            imageUrl: user.imageUrl,
+            hasImage: user.hasImage
         }
     }).filter(Boolean) as Member[] ?? [];
 

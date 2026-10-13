@@ -1,10 +1,12 @@
 "use client"
 import { useState } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ExpenseList from "./ExpensesList"
 import ExpensesCards from "./ExpenseCards"
 import { PaginationComponent } from "./PaginationComponent"
+import AddExpenseDialog from "./AddExpenseDialog"
+import { PeriodTabs } from "./HouseholdUI"
+import { getPeriodRange, PERIOD_LABELS } from "@/lib/household"
 
 type ExpenseParticipation = {
   id: number
@@ -50,12 +52,7 @@ export default function FilterableChoreList({
     router.push(`${pathname}?${params.toString()}`)
   }
 
-  const tabTitle =
-    activeTab === "all"
-      ? "All Expenses"
-      : activeTab === "month"
-        ? "This Month's Expenses"
-        : "This Week's Expenses"
+  const periodLabel = PERIOD_LABELS[activeTab]
 
   const [now] = useState(() => Date.now())
   const oneWeekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000)
@@ -73,39 +70,62 @@ export default function FilterableChoreList({
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
-  const totalPages = Math.max(1, Math.ceil(filteredExpenses.length / pageSize))
+  // an expense is unpaid while anyone in its split still owes
+  const isSettled = (expenseId: number) =>
+    expenseParticipation
+      .filter((p) => p.expenseId === expenseId)
+      .every((p) => p.isPaid)
+
+  // unpaid splits are shown regardless of period so nothing owed gets hidden
+  const unpaidExpenses = allExpenses
+    .filter((e) => !isSettled(e.id))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  const settledExpenses = filteredExpenses.filter((e) => isSettled(e.id))
+
+  const totalPages = Math.max(1, Math.ceil(settledExpenses.length / pageSize))
   const startIndex = (currentPage - 1) * pageSize
   const endIndex = startIndex + pageSize
-  const paginatedExpenses = filteredExpenses.slice(startIndex, endIndex)
+  const paginatedExpenses = settledExpenses.slice(startIndex, endIndex)
 
   return (
-    <div>
-      <section className="mb-6">
-        <ExpensesCards
-          expenses={allExpenses}
-          filteredExpenses={filteredExpenses}
-          expenseParticipation={expenseParticipation}
-          activeTab={activeTab}
-        />
-      </section>
-      <div>
-        <Tabs value={activeTab} onValueChange={updateTab}>
-          <TabsList className="mb-2 grid w-full grid-cols-3 lg:w-auto">
-            <TabsTrigger value="week">This Week</TabsTrigger>
-            <TabsTrigger value="month">This Month</TabsTrigger>
-            <TabsTrigger value="all">All Time</TabsTrigger>
-          </TabsList>
+    <div className="flex flex-col gap-6">
+      <PeriodTabs
+        value={activeTab}
+        onValueChange={updateTab}
+        range={getPeriodRange(activeTab, new Date(now))}
+      />
 
-          <TabsContent value={activeTab}>
-            <ExpenseList
-              expenses={paginatedExpenses}
-              expenseParticipation={expenseParticipation}
-              title={tabTitle}
-              description="Shared expenses and their payment status"
+      <ExpensesCards
+        expenses={allExpenses}
+        filteredExpenses={filteredExpenses}
+        expenseParticipation={expenseParticipation}
+        activeTab={activeTab}
+      />
+
+      <div className="grid grid-cols-1 gap-5 min-[900px]:grid-cols-2">
+        <ExpenseList
+          expenses={unpaidExpenses}
+          expenseParticipation={expenseParticipation}
+          title="Unpaid"
+          description="Waiting on roommates"
+          emptyTitle="Nobody owes anything"
+          emptyDescription="Unsettled splits will show here with who still needs to pay."
+        />
+        <ExpenseList
+          expenses={paginatedExpenses}
+          expenseParticipation={expenseParticipation}
+          title="Settled"
+          description={periodLabel}
+          emptyTitle={`No expenses ${periodLabel.toLowerCase()}`}
+          emptyDescription="Log rent, groceries or supplies to split them."
+          emptyAction={
+            <AddExpenseDialog
+              variant="outline"
+              triggerLabel="+ Add expense"
+              className="rounded-[8px] px-3.5 py-2 text-[13px]"
             />
-          </TabsContent>
-        </Tabs>
-        <section className="mt-6">
+          }
+        >
           {totalPages > 1 && (
             <PaginationComponent
               totalPages={totalPages}
@@ -118,7 +138,7 @@ export default function FilterableChoreList({
               }}
             />
           )}
-        </section>
+        </ExpenseList>
       </div>
     </div>
   )

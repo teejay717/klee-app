@@ -1,22 +1,29 @@
+"use client"
+
+import { useOrganization } from "@clerk/nextjs"
+
 interface HeaderProps {
-    title: string,
-    description: string,
+    title: React.ReactNode,
+    // shown after the house name, e.g. "Testing · Chores"
+    eyebrow?: React.ReactNode,
+    description?: string,
     children?: React.ReactNode
 }
 
-export default function HeaderComponent({title, description, children} : HeaderProps) {
+export default function HeaderComponent({title, eyebrow, description, children} : HeaderProps) {
+const { organization } = useOrganization()
+const houseName = organization?.name ?? "Apartment"
+
 return (
-    <header className="border-b border-border bg-card">
-    <div className="mx-auto max-w-7xl px-4 pb-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-        <div>
-            <h2 className="text-2xl font-bold text-foreground">{title}</h2>
-            <p className="text-sm text-muted-foreground">{description}</p>
+    <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+        <div className="min-w-0">
+            <div className="text-[13px] font-medium text-muted-foreground" suppressHydrationWarning>
+                {houseName}{eyebrow ? <> · {eyebrow}</> : null}
+            </div>
+            <h1 className="mt-1.5 text-[34px] leading-[1.1] font-bold tracking-[-0.02em]">{title}</h1>
+            {description ? <p className="sr-only">{description}</p> : null}
         </div>
-        {children && <div>{children}</div>}
-        </div>
-    </div>
+        {children && <div className="flex gap-2.5">{children}</div>}
     </header>
 )
 }
-

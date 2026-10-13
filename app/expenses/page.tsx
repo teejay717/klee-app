@@ -38,23 +38,16 @@ export default async function Page({
       : []
 
   return (
-    <div>
-      <HeaderComponent
-        title="Expenses"
-        description="Track and split shared costs"
-      >
-        <AddExpenseDialog className="min-w-[200px] bg-blue-900 px-8 py-6 text-lg font-semibold hover:bg-blue-800" />
+    <div className="flex flex-col gap-6">
+      <HeaderComponent eyebrow="Expenses" title="Expense history">
+        <AddExpenseDialog triggerLabel="+ Expense" />
       </HeaderComponent>
-      <main className="mx-auto mt-10 max-w-7xl space-y-10 p-6">
-        <FilterableExpenseList
-          allExpenses={apartmentExpenses}
-          expenseParticipation={participations}
-          activeTab={tab.toString() as "week" | "month" | "all"}
-          currentPage={page}
-        />
-      </main>
+      <FilterableExpenseList
+        allExpenses={apartmentExpenses}
+        expenseParticipation={participations}
+        activeTab={tab.toString() as "week" | "month" | "all"}
+        currentPage={page}
+      />
     </div>
   )
 }
-
-// children={<AddChoreDialog members={members} className="bg-blue-900 hover:bg-blue-800 px-8 py-6 text-lg font-semibold min-w-[200px]"/>}

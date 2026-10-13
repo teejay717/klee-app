@@ -1,23 +1,13 @@
 "use client";
 import { deleteChore, setChoreCompleted } from "@/server/actions";
-import { Button } from "@/components/ui/button";
-import { Trash } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
 import { useApartment } from "@/context/ApartmentContext";
-import Image from "next/image";
-
-import {
-    Card,
-    CardAction,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import AddChoreDialog from "./AddChoreDialog";
 import { toast } from "sonner";
-import { action } from "@/lib/utils";
+import { action, cn } from "@/lib/utils";
+import { getRelativeLabel } from "@/lib/household";
+import { EmptyState, MemberAvatar, PanelHeader } from "./HouseholdUI";
 
 type ChoreItem = {
     id: number,
@@ -33,11 +23,16 @@ type ChoreListProps = {
     buttonOn?: boolean,
     title?: string,
     description?: string,
+    emptyTitle?: string,
+    emptyDescription?: string,
+    className?: string,
+    // rendered under the rows (e.g. pagination)
+    children?: React.ReactNode,
 }
 
 function getDeadlineLabel(deadline: Date | string | null) {
     if (!deadline) return "No deadline";
-    
+
     const d = deadline instanceof Date ? deadline : new Date(deadline);
     if (Number.isNaN(d.getTime())) return "No deadline"
 
@@ -69,99 +64,92 @@ async function handleDelete(formData: FormData) {
     });
 }
 
-export default function ChoreList({ chores, buttonOn = true, title = "Apartment Chores", description = "Recent tasks assigned across roommates" }: ChoreListProps) {
+export default function ChoreList({
+    chores,
+    buttonOn = true,
+    title = "Chores",
+    description,
+    emptyTitle = "No chores yet",
+    emptyDescription = "Add a chore and assign it to a roommate.",
+    className,
+    children,
+}: ChoreListProps) {
     const { members, currentUserId } = useApartment();
     const memberLabelById = new Map(members.map((m) => [m.userId, m.label]));
 
     return (
-        <Card className="shadow-md">
-            <CardHeader className="flex items-center gap-3 justify-between">
+        <Card className={cn("gap-3.5 p-[22px]", className)}>
+            <PanelHeader title={title} meta={description} />
+
+            {chores.length === 0 ? (
+                <EmptyState title={emptyTitle} description={emptyDescription} />
+            ) : (
                 <div className="flex flex-col">
-                    <CardTitle className="text-xl font-bold">{title}</CardTitle>
-                    <CardDescription>{description}</CardDescription>
+                    {chores.map((chore) => {
+                        const assignee = memberLabelById.get(chore.userId) ?? "Unknown Member";
+                        const chipText = chore.userId === currentUserId ? "You" : assignee.split(' ')[0];
+
+                        // TODO: there is no "completed by" field yet, so this uses the assignee
+                        const dateLabel = chore.isCompleted
+                            ? `Done by ${chipText} · ${getRelativeLabel(chore.completedAt)}`
+                            : getDeadlineLabel(chore.deadline);
+
+                        return (
+                            <div
+                                key={chore.id}
+                                className="flex items-center gap-2 border-t border-row-divider px-1 py-3.5"
+                            >
+                                <form action={handleToggleChore} className="min-w-0 flex-1">
+                                    <input type="hidden" name="choreId" value={String(chore.id)} />
+                                    <input type="hidden" name="nextCompleted" value={String(!chore.isCompleted)} />
+                                    <label className="flex cursor-pointer items-center gap-3.5">
+                                        <Checkbox
+                                            type="submit"
+                                            checked={chore.isCompleted}
+                                            aria-label={chore.isCompleted ? `Mark ${chore.title} as open` : `Mark ${chore.title} as done`}
+                                        />
+                                        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                                            <span
+                                                className={cn(
+                                                    "truncate text-[15px] font-semibold",
+                                                    chore.isCompleted && "text-faint line-through"
+                                                )}
+                                            >
+                                                {chore.title}
+                                            </span>
+                                            <span className="truncate text-[13px] text-muted-foreground">
+                                                {dateLabel}
+                                            </span>
+                                        </span>
+                                        <span className="flex shrink-0 items-center gap-2 text-[13px] font-medium text-ink-secondary">
+                                            <MemberAvatar userId={chore.userId} size={24} />
+                                            <span className="hidden sm:inline">{chipText}</span>
+                                        </span>
+                                    </label>
+                                </form>
+
+                                <form action={handleDelete}>
+                                    <input type="hidden" name="choreId" value={String(chore.id)} />
+                                    <button
+                                        type="submit"
+                                        className="cursor-pointer px-2 py-1 text-xs font-medium text-placeholder transition-colors duration-[120ms] hover:text-destructive"
+                                    >
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        );
+                    })}
                 </div>
-            </CardHeader>
-            <CardContent>
-                {buttonOn ? (
-                    <div className="mb-6 w-full">
-                        <AddChoreDialog />
-                    </div>) : null}
-                <div>
-            {chores.map((chore) => {
-                const assignee = memberLabelById.get(chore.userId) ?? "Unknown Member";
-                const chipText = chore.userId === currentUserId ? "You" : assignee.split(' ')[0];
+            )}
 
-                const dateLabel = chore.isCompleted && chore.completedAt ? 
-                    `Completed on ${new Date(chore.completedAt).toLocaleDateString('en-US', { 
-                        month: 'long', 
-                        day: 'numeric' 
-                    })}` 
-                    : getDeadlineLabel(chore.deadline);
+            {children}
 
-                return (
-            <div key={chore.id} className={`p-3 border rounded-md flex items-center justify-between gap-3 my-2 ${chore.isCompleted ? "bg-slate-100/50" : ""} hover:bg-slate-100/50`}>
-            <div className="flex items-center gap-3 min-w-0">
-                <form action={handleToggleChore}>
-                <input type="hidden" name="choreId" value={String(chore.id)} />
-                <input type="hidden" name="nextCompleted" value={String(!chore.isCompleted)} />
-                    <Checkbox type="submit" className="hover:cursor-pointer" checked={chore.isCompleted}/>
-                </form>
-
-                <div className="min-w-0">
-                    <div className="flex gap-2 items-center justify-start">
-                        <p className={chore.isCompleted ? "truncate line-through text-muted-foreground font-medium" : "truncate font-medium"}>
-                            {chore.title} 
-                        </p>
-                        <span className="inline-block rounded-md bg-slate-200/80 px-2 py-1 text-xs font-medium text-blue-900">
-                            {chipText}
-                        </span>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-600">
-                        {dateLabel}
-                        
-                    </p>
+            {buttonOn ? (
+                <div className="mt-auto">
+                    <AddChoreDialog variant="link" triggerLabel="+ Add chore" />
                 </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-                {(() => {
-                    const member = members.find(m => m.userId === chore.userId);
-                    if (!member) return null;
-                    return (
-                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-sm">
-                            {member.imageUrl ? (
-                            <Image 
-                                src={member.imageUrl} 
-                                alt={member.label} 
-                                width={32}
-                                height={32}
-                                className="w-full h-full object-cover rounded-full" 
-                            />
-                            ) : (
-                                member.initials || member.label[0]
-                            )}
-                        </div>
-                    );
-                })()}
-
-                <form action={handleDelete}>
-                    <input type="hidden" name="choreId" value={String(chore.id)} />
-                    <Button type="submit" variant="ghost" size="icon" className="group hover:cursor-pointer text-slate-400 hover:text-red-500 transition-colors">
-                        <Trash className="w-4 h-4" />
-                    </Button>
-                </form>
-            </div>
-            </div>
-        );
-        })}
-
-        {chores.length === 0 ? (
-        <p className="text-muted-foreground text-sm ">No chores yet!</p>
-        ) : null}
-    </div>
-            </CardContent>
-            </Card>
-        
+            ) : null}
+        </Card>
     );
 }
-

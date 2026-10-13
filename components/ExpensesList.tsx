@@ -1,20 +1,11 @@
+"use client";
 import { deleteExpense, toggleExpensePaid } from "@/server/actions";
-import { Button } from "@/components/ui/button";
-import { Badge } from '@/components/ui/badge'
-import { Trash } from "lucide-react";
-import {
-    Card,
-    CardAction,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { useApartment } from "@/context/ApartmentContext";
-import Image from "next/image";
 import { toast } from "sonner"
-import { action } from "@/lib/utils";
+import { action, cn } from "@/lib/utils";
+import { formatPeso, toDate } from "@/lib/household";
+import { EmptyState, MemberAvatar, PanelHeader } from "./HouseholdUI";
 
 type ExpenseItem = {
     id: number,
@@ -40,6 +31,12 @@ type ExpenseListProps = {
     buttonOn?: boolean,
     title?: string,
     description?: string,
+    emptyTitle?: string,
+    emptyDescription?: string,
+    // e.g. an "+ Add expense" button inside the empty state
+    emptyAction?: React.ReactNode,
+    // rendered under the rows (e.g. pagination)
+    children?: React.ReactNode,
 }
 
 async function handleTogglePaid(formData: FormData) {
@@ -58,151 +55,108 @@ async function handleDelete(formData: FormData) {
     });
 }
 
-export default function ExpenseList({ expenses, expenseParticipation = [], title = "Expenses", description = "Shared expenses and their payment status" }: ExpenseListProps) {
+export default function ExpenseList({
+    expenses,
+    expenseParticipation = [],
+    title = "Expenses",
+    description = "Shared expenses and their payment status",
+    emptyTitle = "No expenses yet",
+    emptyDescription = "Log rent, groceries or supplies to split them.",
+    emptyAction,
+    children,
+}: ExpenseListProps) {
     const { members, currentUserId } = useApartment()
     const memberLabelById = new Map(members.map((m) => [m.userId, m.label]));
-    
-    const formatCurrency = (num: number) => {
-        return new Intl.NumberFormat('en-PH', {
-            style: 'currency',
-            currency: 'PHP',
-            maximumFractionDigits: 0,
-        }).format(num);
-    };
 
     return (
-        <Card className="shadow-md">
-            <CardHeader className="flex items-center gap-3 justify-between">
+        <Card className="gap-3.5 p-[22px]">
+            <PanelHeader title={title} meta={description} />
+
+            {expenses.length === 0 ? (
+                <EmptyState title={emptyTitle} description={emptyDescription}>
+                    {emptyAction}
+                </EmptyState>
+            ) : (
                 <div className="flex flex-col">
-                    <CardTitle className="text-xl font-bold">{title}</CardTitle>
-                    <CardDescription>{description}</CardDescription>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <div>
             {expenses.map((expense) => {
                 const assignee = memberLabelById.get(expense.paidByUserId) ?? "Unknown Member";
                 const chipText = expense.paidByUserId === currentUserId ? "You" : assignee.split(' ')[0];
-                const category = expense.category
 
                 const participants = expenseParticipation.filter(p => p.expenseId === expense.id);
                 const isUserParticipating = participants.some(p => p.userId === currentUserId);
                 const shareAmount = isUserParticipating ? Number(expense.amount) / Number(participants.length) : 0;
-
-                // const dateLabel = chore.isCompleted && chore.completedAt ? 
-                //     `Completed on ${new Date(chore.completedAt).toLocaleDateString('en-US', { 
-                //         month: 'long', 
-                //         day: 'numeric' 
-                //     })}` 
-                //     : getDeadlineLabel(chore.deadline);
+                const dateLabel = toDate(expense.date)?.toLocaleDateString("en-US", { month: "short", day: "numeric" }) ?? "No date";
 
                 return (
-            <div key={expense.id} className="p-3 border rounded-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 my-2 hover:bg-slate-100/50">
-                
-            <div className="flex items-center gap-3 min-w-0">
+            <div key={expense.id} className="flex items-start gap-3 border-t border-row-divider px-1 py-3.5">
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="truncate text-[15px] font-semibold">{expense.description}</span>
+                    <span className="truncate text-[13px] text-muted-foreground">
+                        {chipText} · {dateLabel} · {expense.category}
+                    </span>
 
-
-                <div className="min-w-0">
-                    <div className="flex gap-2 items-center justify-start">
-                        <div>
-                        {(() => {
-                            const member = members.find(m => m.userId === expense.paidByUserId);
-                            if (!member) return null;
-                            return (
-                                
-                                <div className="w-12 h-12 mx-2 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-sm">
-                                    {member.imageUrl ? (
-                                    <Image 
-                                        src={member.imageUrl} 
-                                        alt={member.label} 
-                                        width={48} 
-                                        height={48}
-                                        className="w-full h-full object-cover rounded-full" 
-                                    />
-                                    ) : (
-                                        member.initials || member.label[0]
-                                    )}
-                                </div>
-                            );
-                        })()} 
-                        </div>
-                        <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                                <p className="truncate font-medium">
-                                    {expense.description} 
-                                </p>
-                                <span className="inline-block rounded-md bg-slate-200/80 px-2 py-1 text-xs font-medium text-blue-900">
-                                    {category}
-                                </span>
-                            </div>
-                            <p className="mt-1 text-xs text-slate-600">
-                                <span>Paid by {chipText} • </span>
-                                {expense.date ? new Date(expense.date).toLocaleDateString() : "No Date"}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-                
-                <div className="flex flex-col items-end">
-                    <div className="flex gap-2 my-2">
-                        {expenseParticipation
-                            .filter((p) => p.expenseId === expense.id)
-                            .map((p) => {
+                    {participants.length > 0 ? (
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                            {participants.map((p) => {
                                 const name = memberLabelById.get(p.userId) ?? "Unknown";
-                                const firstName = name.split(" ")[0];
-                                const displayName = p.userId === currentUserId ? "You" : firstName;
+                                const isMe = p.userId === currentUserId;
+                                const displayName = isMe ? "You" : name.split(" ")[0];
 
                                 return (
                                     <form key={p.id} action={handleTogglePaid}>
                                         <input type="hidden" name="expenseId" value={p.expenseId}/>
                                         <input type="hidden" name="nextPaidStatus" value={String(!p.isPaid)}/>
-                                        <button key={p.id} disabled={p.userId !== currentUserId}>
-                                        <Badge
-                                        className={`p-3 transition-opacity ${
-                                            p.userId === currentUserId 
-                                                ? 'cursor-pointer hover:opacity-80' 
-                                                : 'cursor-default opacity-60'
-                                                } ${
-                                                    p.isPaid
-                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                }`}
-                                            >
-                                                {displayName}: {p.isPaid ? 'Paid' : 'Pending'}
-                                        </Badge>
-                                    </button>
+                                        <button
+                                            disabled={!isMe}
+                                            title={isMe ? (p.isPaid ? "Mark your share as unpaid" : "Mark your share as paid") : undefined}
+                                            className={cn(
+                                                "rounded-full px-2.5 py-1 text-xs font-semibold transition-opacity duration-[120ms]",
+                                                p.isPaid
+                                                    ? "bg-[oklch(0.95_0.04_150)] text-[oklch(0.42_0.11_150)]"
+                                                    : "bg-secondary text-ink-secondary",
+                                                isMe
+                                                    ? "cursor-pointer ring-1 ring-primary/30 hover:opacity-80"
+                                                    : "cursor-default"
+                                            )}
+                                        >
+                                            {displayName} · {p.isPaid ? "Paid" : "Pending"}
+                                        </button>
                                     </form>
-                                )                    
+                                )
                             })}
-                    </div>
-                    <p className="text-xl font-bold text-foreground">{formatCurrency(Number(expense.amount))}</p>
-                    <p className="text-md text-muted-foreground">Your share: 
-                        {expenseParticipation.filter(p => p.expenseId === expense.id).length > 0 
-                        ? formatCurrency(shareAmount) 
-                        : formatCurrency(0)}</p>
-                </div>  
+                        </div>
+                    ) : null}
+                </div>
 
-                <form action={handleDelete}>
-                    <input type="hidden" name="expenseId" value={String(expense.id)} />
-                    <Button type="submit" variant="ghost" size="icon" className="group hover:cursor-pointer text-slate-400 hover:text-red-500 transition-colors">
-                        <Trash className="w-4 h-4" />
-                    </Button>
-                </form>
-            </div>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[15px] font-semibold tabular-nums">
+                            {formatPeso(Number(expense.amount))}
+                        </span>
+                        <MemberAvatar userId={expense.paidByUserId} size={24} />
+                    </div>
+                    {isUserParticipating ? (
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                            Your share {formatPeso(shareAmount)}
+                        </span>
+                    ) : null}
+                    <form action={handleDelete}>
+                        <input type="hidden" name="expenseId" value={String(expense.id)} />
+                        <button
+                            type="submit"
+                            className="cursor-pointer py-1 text-xs font-medium text-placeholder transition-colors duration-[120ms] hover:text-destructive"
+                        >
+                            Delete
+                        </button>
+                    </form>
+                </div>
             </div>
         );
         })}
+                </div>
+            )}
 
-        {expenses.length === 0 ? (
-        <p className="text-muted-foreground text-sm ">No expenses yet!</p>
-        ) : null}
-    </div>
-            </CardContent>
-            </Card>
-        
+            {children}
+        </Card>
     );
 }
-

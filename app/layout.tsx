@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import {
   ClerkProvider,
   Show,
@@ -13,11 +13,19 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { ApartmentProvider } from "@/context/ApartmentContext";
 import { Toaster } from "@/components/ui/sonner";
+import { db } from "@/db";
+import { chores } from "@/db/schema";
+import { and, count, eq, isNull } from "drizzle-orm";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
-
-const fontMono = Geist_Mono({
+const fontSans = Hanken_Grotesk({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-sans",
+});
+
+const fontMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["500"],
   variable: "--font-mono",
 });
 
@@ -43,13 +51,25 @@ export default async function RootLayout({
       "No Email",
   } : null;
 
-  // fetch members
+  // open chore count for the sidebar badge
+  const [openChores] = orgId
+    ? await db
+        .select({ value: count() })
+        .from(chores)
+        .where(
+          and(
+            eq(chores.apartmentId, orgId),
+            eq(chores.isCompleted, false),
+            isNull(chores.deletedAt)
+          )
+        )
+    : [{ value: 0 }]
 
   return (
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("light", "antialiased", fontMono.variable, "font-sans", geist.variable)}
+      className={cn("light", "antialiased", fontMono.variable, "font-sans", fontSans.variable)}
     >
       <body>
         <ClerkProvider>
@@ -71,10 +91,15 @@ export default async function RootLayout({
           ) : (
             /* Standard Dashboard View with Sidebar */
             <ApartmentProvider>
-              <SidebarProvider>
-                <AppSidebar identity={sidebarIdentity}/>
+              <SidebarProvider
+                style={{ "--sidebar-width": "232px" } as React.CSSProperties}
+              >
+                <AppSidebar
+                  identity={sidebarIdentity}
+                  openChoreCount={openChores?.value ?? 0}
+                />
                 <SidebarInset>
-                  <div className="p-4">
+                  <div className="px-4 py-6 md:px-11 md:py-9">
                     {children}
                   </div>
                 </SidebarInset>

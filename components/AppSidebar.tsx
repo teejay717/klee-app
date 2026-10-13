@@ -11,94 +11,105 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs"
-import { LayoutDashboard, SquareCheckBig } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 type AppSidebarProps = {
   identity: { name: string; email: string } | null
+  openChoreCount?: number
 }
 
-export function AppSidebar({ identity }: AppSidebarProps) {
+const NAV_ITEMS = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/chores", label: "Chores" },
+  { href: "/expenses", label: "Expenses" },
+]
+
+export function AppSidebar({ identity, openChoreCount = 0 }: AppSidebarProps) {
+  const pathname = usePathname()
+
   return (
-    <Sidebar>
-      <SidebarHeader className="items-center border-b p-4">
+    <Sidebar className="border-r-border">
+      <SidebarHeader className="px-3.5 pt-5 pb-0">
         <OrganizationSwitcher
           hidePersonal={true}
           appearance={{
             elements: {
+              rootBox: "!w-full",
               organizationSwitcherTrigger: `
-                !w-54 !h-12 !px-4 !justify-between
-                !bg-white !hover:bg-blue-900
-                text-gray-900 border border-gray-200
-                rounded-md shadow-sm transition-colors
+                !w-full !justify-between !gap-2.5 !px-2.5 !py-2
+                !bg-white !border !border-solid !border-border !rounded-[10px]
+                !shadow-none hover:!bg-white focus:!shadow-none
+                transition-colors
             `,
-              organizationPreviewMainIdentifier: "!font-bold !text-md",
-              organizationSwitcherTriggerIcon: "!w-5 !h-5",
+              organizationPreview: "!gap-2.5",
+              organizationPreviewAvatarBox: "!size-[26px] !rounded-[7px]",
+              organizationPreviewMainIdentifier:
+                "!text-sm !font-semibold !text-foreground",
+              organizationSwitcherTriggerIcon: "!size-3.5 !text-muted-foreground",
               organizationSwitcherPopoverCard:
-                "shadow-lg border border-gray-200 rounded-lg",
+                "shadow-lg border border-border rounded-[10px]",
             },
           }}
         />
       </SidebarHeader>
-      <SidebarContent className="px-2">
-        <SidebarGroup />
-        <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link href="/dashboard">
-                  <LayoutDashboard />
-                  <span>Dashboard</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroupContent>
-        <SidebarGroup />
-        <SidebarGroup />
-        <SidebarGroupLabel>Daily Life</SidebarGroupLabel>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link href="/chores">
-                  <SquareCheckBig />
-                  <span>Chores</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroupContent>
-        <SidebarGroup />
-        <SidebarGroup />
-        <SidebarGroupLabel>Finances</SidebarGroupLabel>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link href="/expenses">
-                  <SquareCheckBig />
-                  <span>Expenses</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroupContent>
-        <SidebarGroup />
+
+      <SidebarContent className="px-3.5">
+        <SidebarGroup className="mt-7 p-0">
+          <SidebarGroupLabel className="h-auto px-2.5 pt-0 pb-2 font-mono text-[11px] font-medium tracking-[.06em] text-faint">
+            HOME
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-0.5">
+              {NAV_ITEMS.map((item) => {
+                const isActive =
+                  pathname === item.href || pathname.startsWith(`${item.href}/`)
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      className="h-auto gap-2.5 rounded-[8px] px-2.5 py-[9px] text-sm font-medium text-ink-secondary transition-colors duration-[120ms] hover:bg-white/70 hover:text-foreground data-active:bg-white data-active:font-semibold data-active:text-foreground data-active:shadow-[0_1px_2px_rgba(0,0,0,.06)]"
+                    >
+                      <Link href={item.href}>
+                        <span
+                          aria-hidden
+                          className={cn(
+                            "size-2 shrink-0 rounded-[2px]",
+                            isActive
+                              ? "bg-primary"
+                              : "border-[1.5px] border-[#b5b1a8]"
+                          )}
+                        />
+                        <span>{item.label}</span>
+                        {item.href === "/chores" ? (
+                          <span className="ml-auto font-mono text-[11px] font-medium text-muted-foreground">
+                            {openChoreCount}
+                          </span>
+                        ) : null}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
-        <div className="flex items-center gap-4">
-          <UserButton />
-          <div className="flex flex-col">
-            <span className="text-xs font-bold">
+      <SidebarFooter className="px-3.5 pb-5">
+        <div className="flex items-center gap-2.5 border-t border-border p-2.5">
+          <UserButton
+            appearance={{ elements: { avatarBox: "!size-8" } }}
+          />
+          <div className="flex min-w-0 flex-col">
+            <span className="truncate text-[13px] font-semibold text-foreground">
               {identity?.name ?? "User"}
             </span>
-            <span className="text-xs text-sidebar-foreground/70">
+            <span className="truncate text-xs text-muted-foreground">
               {identity?.email ?? "No Email"}
             </span>
           </div>
