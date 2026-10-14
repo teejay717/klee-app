@@ -1,5 +1,6 @@
 import { LandingNav } from "@/components/landing/LandingNav"
 import { Hero } from "@/components/landing/Hero"
+import { SolutionsRow } from "@/components/landing/SolutionsRow"
 
 export default function LandingPage() {
   return (
@@ -13,6 +14,7 @@ export default function LandingPage() {
       <LandingNav />
       <main id="main">
         <Hero />
+        <SolutionsRow />
       </main>
     </div>
   )
