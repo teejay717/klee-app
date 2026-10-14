@@ -3,6 +3,7 @@ import { Hero } from "@/components/landing/Hero"
 import { SolutionsRow } from "@/components/landing/SolutionsRow"
 import { ProductShowcase } from "@/components/landing/ProductShowcase"
 import { FeaturesBento } from "@/components/landing/FeaturesBento"
+import { ClosingCTA, LandingFooter } from "@/components/landing/ClosingCTA"
 
 export default function LandingPage() {
   return (
@@ -19,7 +20,9 @@ export default function LandingPage() {
         <SolutionsRow />
         <ProductShowcase />
         <FeaturesBento />
+        <ClosingCTA />
       </main>
+      <LandingFooter />
     </div>
   )
 }
