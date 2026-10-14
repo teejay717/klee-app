@@ -11,9 +11,12 @@ import { cn } from "@/lib/utils"
 export function StatStrip({
   stats,
   className,
+  compact = false,
 }: {
   stats: { label: string; value: React.ReactNode; accent?: boolean }[]
   className?: string
+  // smaller values and padding, for previews (landing page)
+  compact?: boolean
 }) {
   return (
     <div
@@ -27,14 +30,18 @@ export function StatStrip({
         <div
           key={stat.label}
           // 1px dividers between cells (the -mr/-mb hide the outer edges)
-          className="-mr-px -mb-px border-r border-b border-divider px-[22px] py-5"
+          className={cn(
+            "-mr-px -mb-px border-r border-b border-divider",
+            compact ? "px-4 py-3.5" : "px-[22px] py-5"
+          )}
         >
           <div className="text-xs font-medium text-muted-foreground">
             {stat.label}
           </div>
           <div
             className={cn(
-              "mt-1.5 text-[30px] leading-tight font-bold tabular-nums",
+              "mt-1.5 leading-tight font-bold tabular-nums",
+              compact ? "text-[22px] sm:text-[26px]" : "text-[30px]",
               stat.accent && "text-primary"
             )}
           >
