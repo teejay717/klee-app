@@ -4,7 +4,6 @@ import { formatPeso } from "@/lib/household"
 import { cn } from "@/lib/utils"
 import { Reveal } from "./Reveal"
 import {
-  KleeMark,
   PersonAvatar,
   Preview,
   PreviewCheck,
@@ -63,7 +62,7 @@ function DashboardPreview() {
       {/* sidebar */}
       <div className="hidden w-[200px] shrink-0 flex-col border-r border-border px-3 py-5 md:flex">
         <div className="flex items-center gap-2.5 rounded-[10px] border border-border bg-white px-2.5 py-2">
-          <KleeMark size={26} />
+          <span className="grid size-[26px] shrink-0 place-items-center rounded-[7px] bg-primary text-xs font-semibold text-white">M</span>
           <span className="flex min-w-0 flex-col">
             <span className="truncate text-sm font-semibold">Maple House</span>
             <span className="text-[11px] text-muted-foreground">4 members</span>

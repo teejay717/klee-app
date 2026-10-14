@@ -29,8 +29,9 @@ export function Hero() {
         <HeroFragments />
 
         <div className="relative mx-auto flex max-w-4xl flex-col items-center px-5 pt-16 pb-14 text-center sm:pt-24 sm:pb-20 xl:pt-32 xl:pb-44">
-          <div className="grid size-16 place-items-center rounded-[18px] border border-border bg-card shadow-float motion-safe:animate-float-slow">
-            <KleeMark size={34} />
+          <div className="flex items-center gap-2.5 rounded-[18px] border border-border bg-card py-3 pr-5 pl-3 shadow-float motion-safe:animate-float-slow">
+            <KleeMark size={38} />
+            <span className="text-[30px] leading-none font-bold tracking-[-0.035em]">klee</span>
           </div>
 
           <h1

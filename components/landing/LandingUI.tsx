@@ -5,32 +5,38 @@ import { cn } from "@/lib/utils"
 // Building blocks for the landing page. Everything here sits on the dashboard
 // tokens (colours, radii, type scale) so both surfaces read as one product.
 
+// The klee mark: a roof over a checkmark (a home where things get done), on
+// the same navy rounded tile as the dashboard's house switcher.
+// Same artwork as app/icon.svg and public/klee-mark.svg.
 export function KleeMark({ size = 26, className }: { size?: number; className?: string }) {
-  // Same tile as the dashboard's house switcher: navy, rounded, white initial.
+  // thicker strokes at small sizes so it stays legible
+  const stroke = size <= 18 ? 3.2 : size <= 24 ? 2.9 : 2.6
   return (
-    <span
+    <svg
       aria-hidden
-      className={cn(
-        "grid shrink-0 place-items-center bg-primary font-bold text-white",
-        className
-      )}
-      style={{
-        width: size,
-        height: size,
-        borderRadius: Math.round(size * 0.27),
-        fontSize: Math.round(size * 0.5),
-      }}
+      viewBox="0 0 32 32"
+      width={size}
+      height={size}
+      className={cn("shrink-0", className)}
     >
-      k
-    </span>
+      <rect width="32" height="32" rx="9" className="fill-primary" />
+      <path
+        d="M8 15.75 16 8.75 24 15.75M11.25 20 14.6 23.35 20.75 17.2"
+        fill="none"
+        stroke="#fff"
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <span className={cn("flex items-center gap-2.5", className)}>
+    <span className={cn("flex items-center gap-2", className)}>
       <KleeMark />
-      <span className="text-lg font-bold tracking-[-0.02em]">klee</span>
+      <span className="text-[20px] leading-none font-bold tracking-[-0.03em]">klee</span>
     </span>
   )
 }
